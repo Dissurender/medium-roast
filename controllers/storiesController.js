@@ -3,20 +3,44 @@ const base = 'https://hacker-news.firebaseio.com/';
 module.exports = {
   getTopStories: async (req, res) => {
     console.log('starting');
-    const response = await fetch(base + 'v0/topstories.json')
+    await fetch(base + 'v0/topstories.json')
       .then(processChunkedResponse)
+      .then((stories) => {
+        return ingestData(stories.slice(0, 20));
+      })
       .then((data) => {
-        ingestData(data).then((results) => {
-          res.json(results);
-        });
+        // console.log(data);
+        console.log(data.length);
+        res.json(data);
       });
   },
   getStory: async (req, res) => {
-    fetch(base + `v0/item/${req.params.story}.json`)
-      .then(processChunkedResponse)
-      .then((data) => {
-        res.json(data);
-      });
+    let story = await fetch(base + `v0/item/${req.params.story}.json`).then(
+      processChunkedResponse
+    );
+
+    /*
+     * TODO: Unwrap child Promise objects
+     */
+
+    const children = await Promise.allSettled(
+      story['kids'].map((kid) => {
+        return ingestData([kid]);
+      })
+    );
+    console.log(children.length);
+
+    Object.keys(story).map((key) => {
+      if (key === 'kids') {
+        delete story[key];
+
+        story[key] = children.map((kid) => kid);
+      }
+    });
+
+    console.log('AFTER -- ' + story);
+
+    res.json(story);
   },
 };
 
@@ -51,56 +75,17 @@ function processChunkedResponse(response) {
 // DOES THIS EVEN WORK?
 async function ingestData(data) {
   let queue = [...data];
-  let workQueue = new Queue();
   let result = [];
 
-  while (queue.length > 0 && !workQueue.done) {
-    while (workQueue.ready && queue.length > 0) {
-      workQueue.enqueue(data.pop());
-    }
+  while (queue.length > 0) {
+    const cursor = queue.pop();
 
-    const cursor = workQueue.dequeue;
-
-    const response = await fetch(base + `v0/item/${cursor}.json`);
-
-    result.push(response);
+    await fetch(base + `v0/item/${cursor}.json`)
+      .then(processChunkedResponse)
+      .then((data) => {
+        result.push(data);
+      });
   }
 
-  return Promise.allSettled(result);
-}
-
-class Queue {
-  constructor() {
-    this.items = {};
-    this.frontIndex = 0;
-    this.backIndex = 0;
-  }
-  enqueue(item) {
-    this.items[this.backIndex] = item;
-    this.backIndex++;
-    console.log(item + ' added to queue');
-    return;
-  }
-  dequeue() {
-    const item = this.items[this.frontIndex];
-    delete this.items[this.frontIndex];
-    this.frontIndex++;
-    console.log(item + ' removed to queue');
-    return item;
-  }
-  peek() {
-    return this.items[this.frontIndex];
-  }
-
-  ready() {
-    return Object.keys(this.items) < 10 && Object.keys(this.items) >= 0;
-  }
-
-  done() {
-    return Object.keys(this.items).length === 0;
-  }
-
-  get printQueue() {
-    return this.items;
-  }
+  return result;
 }
