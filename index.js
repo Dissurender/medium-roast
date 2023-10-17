@@ -1,0 +1,19 @@
+const express = require('express');
+const app = express();
+const routes = require('./routes/index');
+
+const morgan = require('morgan');
+
+require('dotenv').config({ path: './config/.env' });
+const port = process.env.PORT || 8000;
+
+app.use(express.static(__dirname + '/public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(morgan('dev'));
+
+app.use('/', routes);
+
+app.listen(port, () => {
+  `Server is running on port: http://localhost:${port}/`;
+});
