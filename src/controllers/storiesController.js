@@ -32,22 +32,25 @@ module.exports = {
 
     /*
      * TODO: Unwrap child Promise objects
+     * Using the ingest helper function, create a Promise[]
+     * and replace the child `ID`s with the fetched data
      */
-
     const children = await Promise.allSettled(
       story['kids'].map((kid) => {
         return ingestData([kid]);
       })
     );
-    console.log(children.length);
 
-    Object.keys(story).map((key) => {
-      if (key === 'kids') {
-        delete story[key];
+    // Using the found child objects replace the held kids[int]
+    delete story['kids'];
+    story['kids'] = children;
 
-        story[key] = children.map((kid) => kid);
-      }
-    });
+    // Object.keys(story).map((key) => {
+    //   if (key === 'kids') {
+    //     delete story[key];
+    //     story[key] = children.map((kid) => kid);
+    //   }
+    // });
 
     res.json(story);
   },
@@ -55,7 +58,7 @@ module.exports = {
 
 /**
  * This helper function receives a ByteStream and mutates
- * into a String then parses to Json.
+ * into a String using 9th Level Magic then parses to Json.
  * @param {Promise<Response>} response - Response
  * @returns json of accumulated http chunks received
  */
@@ -74,20 +77,27 @@ function processChunkedResponse(response) {
     var chunk = decoder.decode(result.value || new Uint8Array(), {
       stream: !result.done,
     });
-    console.log('got chunk of', chunk.length, 'bytes');
+    // console.log('got chunk of', chunk.length, 'bytes');
     text += chunk;
-    console.log('text so far is', text.length, 'bytes\n');
+    // console.log('text so far is', text.length, 'bytes\n');
     if (result.done) {
-      console.log('returning');
+      // console.log('returning');
       return JSON.parse(text);
     } else {
-      console.log('recursing');
+      // console.log('recursing');
       return readChunk();
     }
   }
 }
 
 // DOES THIS EVEN WORK?
+/**
+ * This is where the magic is, implementing a simple
+ * work queue to hold a local copy of data and draining
+ * it to mutate and store into the result array
+ * @param {Integer[]} data - Array of ids
+ * @returns {Object[]} result - Array of fetch objects
+ */
 async function ingestData(data) {
   let queue = [...data];
   let result = [];

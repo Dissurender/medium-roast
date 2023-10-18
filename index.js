@@ -1,15 +1,16 @@
 const express = require('express');
 const app = express();
-const routes = require('./routes/index');
+const cors = require('cors');
+const routes = require('./src/routes/index');
 
 const morgan = require('morgan');
-
-require('dotenv').config({ path: './config/.env' });
+const { pool } = require('./db/index.js');
 const port = process.env.PORT || 8000;
 
 app.use(express.static(__dirname + '/public'));
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors);
 app.use(morgan('dev'));
 
 app.use('/', routes);
