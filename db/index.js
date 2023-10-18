@@ -10,5 +10,9 @@ client.on('error', (err) => console.error('Redis Client bork bork...', err));
 await client.connect();
 
 if (client.isReady) {
-  console.log("Redis ready...")
+  console.log('Redis ready...');
 }
+
+module.exports = {
+  client,
+};

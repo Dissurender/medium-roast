@@ -1,67 +1,64 @@
 /**
- * Singleton Object
+ * TODO:
  */
-const Cache = {};
+class Cache {
+  defaultCache;
+  constructor() {
+    this.defaultCache = new Map();
+  }
 
-const defaultNamespace = Symbol('defaultNamespace');
+  getSize() {
+    return this.defaultCache.size;
+  }
 
-/**
- * useNamespace() is used to isolate the different 'zones'
- * of the Cache, such as Stories or Comments determined
- * by the type field in the Object.
- * @param {Symbol} namespace -- Name to break up span.
- * @returns methods for manipulating the focused namespace.
- */
-function useNamespace(namespace) {
-  if (!Cache[namespace]) {
-    Cache[namespace] = new Map();
+  peekName() {
+    return this.defaultCache;
   }
 
   /**
    * @method
-   * @param {Number} key -- Story ID 
+   * @param {Number} key -- Story ID
    * @returns {Object} -- Schema found in src/models
    */
-  function get(key) {
-    return Cache[namespace].get(key);
+  get(key) {
+    return this.defaultCache.get(key);
+  }
+
+  getAll() {
+    return this.defaultCache.values;
   }
 
   /**
    * using the Story ID and the Story itself, put a
-   * key/value pair into Cache
+   * key/value pair into this.defaultCache
    * @method
-   * @param {Number} key 
-   * @param {Object} value 
+   * @param {Number} key
+   * @param {Object} value
    */
-  function put(key, value) {
-    Cache[namespace].set(key, value);
+  put(key, value) {
+    this.defaultCache.set(key, value);
   }
 
   /**
    * Remove does just that.
    * @method
-   * @param {Nunmber} key -- Story ID 
+   * @param {Nunmber} key -- Story ID
    */
-  function remove(key) {
-    Cache[namespace].delete(key);
+  remove(key) {
+    this.defaultCache.delete(key);
   }
 
   /**
    * @method
-   * retire flushes the namespace in the Cache
+   * retire flushes the  in the this.defaultCache
    */
-  function retire() {
-    Cache[namespace].clear();
+  retire() {
+    this.defaultCache.clear();
   }
-
-  return { get, put, remove, retire };
 }
 
-const { get, put, remove } = useNamespace(defaultNamespace);
+const defaultCache = new Cache();
 
 module.exports = {
-  get,
-  put,
-  remove,
-  useNamespace,
+  defaultCache,
 };

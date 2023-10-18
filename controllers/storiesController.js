@@ -1,13 +1,18 @@
 const base = 'https://hacker-news.firebaseio.com/';
+const { defaultCache } = require('../utils/Cache.js');
 
 module.exports = {
   /**
    * Retrieves top stories from HN API
    * @async
-   * @method
+   * @method getAll returns all Objects in the namespace
    * @returns { Object[]} Object Array
    */
   getTopStories: async (req, res) => {
+    if (defaultCache.getSize() > 0) {
+      return defaultCache;
+    }
+
     console.log('starting');
     await fetch(base + 'v0/topstories.json')
       .then(processChunkedResponse)
@@ -19,6 +24,11 @@ module.exports = {
         console.log(data.length);
         res.json(data);
       });
+
+      // TODO: implement the Caching function
+    // const results = defaultCache.getAll();
+    // console.log(typeof results);
+    // res.json(results);
   },
   /**
    *
@@ -77,14 +87,12 @@ function processChunkedResponse(response) {
     var chunk = decoder.decode(result.value || new Uint8Array(), {
       stream: !result.done,
     });
-    // console.log('got chunk of', chunk.length, 'bytes');
+    console.log('got chunk of', chunk.length, 'bytes');
     text += chunk;
-    // console.log('text so far is', text.length, 'bytes\n');
+    console.log('text so far is', text.length, 'bytes\n');
     if (result.done) {
-      // console.log('returning');
       return JSON.parse(text);
     } else {
-      // console.log('recursing');
       return readChunk();
     }
   }
@@ -108,6 +116,9 @@ async function ingestData(data) {
     await fetch(base + `v0/item/${cursor}.json`)
       .then(processChunkedResponse)
       .then((data) => {
+        const type = data.type;
+        console.log(type);
+        // defaultCache.put(data.id, data);
         result.push(data);
       });
   }
