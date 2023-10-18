@@ -12,10 +12,10 @@ module.exports = {
     await fetch(base + 'v0/topstories.json')
       .then(processChunkedResponse)
       .then((stories) => {
+        // With the Interger[] we pass to the ingestor to fulfull the data
         return ingestData(stories.slice(0, 20));
       })
       .then((data) => {
-        // console.log(data);
         console.log(data.length);
         res.json(data);
       });
