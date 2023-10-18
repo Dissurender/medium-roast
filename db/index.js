@@ -1,18 +1,17 @@
-const { createClient } = require('redis');
+const { Pool } = require('pg');
+const config = require('./database.config.js')
 
-const client = createClient({
-  // url: `redis://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}:${process.env.DATABASE_PORT}`
-  url: 'redis://127.0.0.1:6379',
-});
+console.log('Init DB..');
 
-client.on('error', (err) => console.error('Redis Client bork bork...', err));
-
-await client.connect();
-
-if (client.isReady) {
-  console.log('Redis ready...');
-}
+const pool = new Pool(config.development);
 
 module.exports = {
-  client,
+  query: async (text, params) => {
+    const initTime = Date.now();
+    const response = await pool.query(text, params);
+    const dur = Date.now() - initTime;
+    console.log('PG Query fired:', { text, dur, rows: response.rowCount });
+    return response;
+  },
+  pool,
 };
