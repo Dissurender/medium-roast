@@ -1,6 +1,12 @@
 const base = 'https://hacker-news.firebaseio.com/';
 
 module.exports = {
+  /**
+   * Retrieves top stories from HN API
+   * @async
+   * @method
+   * @returns { Object[]} Object Array
+   */
   getTopStories: async (req, res) => {
     console.log('starting');
     await fetch(base + 'v0/topstories.json')
@@ -14,6 +20,11 @@ module.exports = {
         res.json(data);
       });
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   */
   getStory: async (req, res) => {
     let story = await fetch(base + `v0/item/${req.params.story}.json`).then(
       processChunkedResponse
@@ -38,12 +49,16 @@ module.exports = {
       }
     });
 
-    console.log('AFTER -- ' + story);
-
     res.json(story);
   },
 };
 
+/**
+ * This helper function receives a ByteStream and mutates
+ * into a String then parses to Json.
+ * @param {Promise<Response>} response - Response
+ * @returns json of accumulated http chunks received
+ */
 function processChunkedResponse(response) {
   var text = '';
   var reader = response.body.getReader();
