@@ -26,7 +26,8 @@
     "express": "^4.18.2",
     "morgan": "^1.10.0",
     "pg": "^8.11.3",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "schm": "^0.4.1"
   },
   "devDependencies": {
     "jsdoc": "^4.0.2",
