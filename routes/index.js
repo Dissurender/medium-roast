@@ -9,6 +9,10 @@ const router = express.Router();
 router.get('/', function (req, res) {
   res.send('index');
 });
-router.use('/api', require('./api.js'))
+router.use('/api', require('./api.js'));
+router.use(
+  '/secretingest',
+  require('../controllers/ingestController.js').ingestTask
+);
 
 module.exports = router;
