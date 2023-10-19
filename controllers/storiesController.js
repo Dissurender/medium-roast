@@ -1,5 +1,5 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import { query } from "../db/index.js"
+import { query } from "../db/index.cjs"
 
 /**
  * Retrieves top stories from HN API
@@ -118,8 +118,9 @@ async function ingestData(data) {
 }
 
 async function insertQuery(item) {
-  const template = `INSERT INTO stories (id, by, time, descendants, score, title, url, text) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
+  const template = `INSERT INTO $1(id, by, time, descendants, score, title, url, text) VALUES ($2, $3, $4, $5, $6, $7, $8, $9)`;
   const values = [
+    item['type'],
     item['id'],
     item['by'],
     item['time'],
@@ -129,7 +130,7 @@ async function insertQuery(item) {
     item['url'],
     item['text'],
   ];
-
+  console.log('storyController')
   const res = await query(template, values);
   console.log(res);
 }

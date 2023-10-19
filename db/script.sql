@@ -32,6 +32,6 @@ create table if not exists "story_comments" (
   "story_id" INTEGER not null,
   "comment_id" INTEGER not null,
   primary key ("story_id", "comment_id"),
-  constraint foreign key ("story_id") references "stories" ("id"),
-  constraint foreign key ("comment_id") references "comments" ("id")
+  foreign key ("story_id") references "stories" ("id"),
+  foreign key ("comment_id") references "comments" ("id")
 );

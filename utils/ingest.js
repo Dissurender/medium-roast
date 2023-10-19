@@ -1,5 +1,5 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import { query } from '../db/index.js';
+import { query } from '../db/index.cjs';
 
 /**
  * Retrieves top stories from HN API
