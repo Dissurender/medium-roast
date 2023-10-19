@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use(cors);
 app.use(morgan('dev'));
 
-app.use('/', routes);
+app.use(routes);
 
 app.listen(port, () => {
   `Server is running on port: http://localhost:${port}/`;
