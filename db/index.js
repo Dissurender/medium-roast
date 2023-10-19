@@ -1,9 +1,11 @@
-const { Pool } = require('pg');
+import pg from 'pg';
+const { Pool } = pg;
 
-require('dotenv').config('../config/.env');
+import dot from 'dotenv';
+dot.config('../config/.env');
 
 console.log('DB init...');
-const pool = new Pool({
+export const pool = new Pool({
   user: 'code',
   password: 'limuxmint',
   database: 'hndb',
@@ -12,20 +14,15 @@ const pool = new Pool({
 });
 
 /**
- * 
+ *
  * @param {String} text -- Query string
- * @param {Array} params 
- * @returns 
+ * @param {Array} params
+ * @returns
  */
-async function query(text, params) {
+export async function query(text, params) {
   const start = Date.now();
   const res = await pool.query(text, params);
   const duration = Date.now() - start;
   console.log('executed query', { text, duration, rows: res.rowCount });
   return res;
 }
-
-module.exports = {
-  query,
-  pool,
-};

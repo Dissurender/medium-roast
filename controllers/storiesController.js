@@ -1,70 +1,65 @@
 const base = 'https://hacker-news.firebaseio.com/';
-const { query } = require('../db/index.js');
+import { query } from "../db/index.js"
 
-module.exports = {
-  /**
-   * Retrieves top stories from HN API
-   * @async
-   * @method getAll returns all Objects in the namespace
-   * @returns { Object[]} Object Array
+/**
+ * Retrieves top stories from HN API
+ * @async
+ * @method getAll returns all Objects in the namespace
+ * @returns { Object[]} Object Array
+ */
+export const getTopStories = async (req, res) => {
+  console.log('starting');
+  await fetch(base + 'v0/topstories.json')
+    .then(processChunkedResponse)
+    .then((stories) => {
+      // With the Interger[] we pass to the ingestor to fulfull the data
+      return ingestData(stories.slice(0, 2));
+    })
+    .then((data) => {
+      console.log(data.length);
+      res.json(data);
+    });
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ */
+export const getStory = async (req, res) => {
+  let story = await fetch(base + `v0/item/${req.params.story}.json`).then(
+    processChunkedResponse
+  );
+
+  /*
+   * TODO: Unwrap child Promise objects
+   * Using the ingest helper function, create a Promise[]
+   * and replace the child `ID`s with the fetched data
    */
-  getTopStories: async (req, res) => {
-    console.log('starting');
-    await fetch(base + 'v0/topstories.json')
-      .then(processChunkedResponse)
-      .then((stories) => {
-        // With the Interger[] we pass to the ingestor to fulfull the data
-        return ingestData(stories.slice(0, 2));
-      })
-      .then((data) => {
-        console.log(data.length);
-        res.json(data);
-      });
+  const children = await Promise.allSettled(
+    story['kids'].map((kid) => {
+      return ingestData([kid]);
+    })
+  );
 
-    // TODO: implement the Caching function
-    // const results = defaultCache.getAll();
-    // console.log(typeof results);
-    // res.json(results);
-  },
-  /**
-   *
-   * @param {Request} req
-   * @param {Response} res
-   */
-  getStory: async (req, res) => {
-    let story = await fetch(base + `v0/item/${req.params.story}.json`).then(
-      processChunkedResponse
-    );
+  // Using the found child objects replace the held kids[int]
+  delete story['kids'];
+  story['kids'] = children;
 
-    /*
-     * TODO: Unwrap child Promise objects
-     * Using the ingest helper function, create a Promise[]
-     * and replace the child `ID`s with the fetched data
-     */
-    const children = await Promise.allSettled(
-      story['kids'].map((kid) => {
-        return ingestData([kid]);
-      })
-    );
+  // Object.keys(story).map((key) => {
+  //   if (key === 'kids') {
+  //     delete story[key];
+  //     story[key] = children.map((kid) => kid);
+  //   }
+  // });
 
-    // Using the found child objects replace the held kids[int]
-    delete story['kids'];
-    story['kids'] = children;
-
-    // Object.keys(story).map((key) => {
-    //   if (key === 'kids') {
-    //     delete story[key];
-    //     story[key] = children.map((kid) => kid);
-    //   }
-    // });
-
-    res.json(story);
-  },
+  res.json(story);
 };
 
 /**
  * This helper function receives a ByteStream and mutates
  * into a String using 9th Level Magic then parses to Json.
+ * used in {@link getTopStories} and {@link getStory}
  * @param {Promise<Response>} response - Response
  * @returns json of accumulated http chunks received
  */
@@ -114,7 +109,7 @@ async function ingestData(data) {
       .then((data) => {
         const type = data.type;
         console.log(type);
-        insertQuery(data)
+        insertQuery(data);
         result.push(data);
       });
   }

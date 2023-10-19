@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const storiesController = require('../controllers/storiesController.js');
+import { getStory, getTopStories } from '../controllers/storiesController.js';
 
-router.use('/top', storiesController.getTopStories);
-router.use('/:story', storiesController.getStory);
+router.use('/top', getTopStories);
+router.use('/:story', getStory);
 
-module.exports = router;
+export default router;

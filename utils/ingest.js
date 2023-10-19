@@ -1,12 +1,12 @@
 const base = 'https://hacker-news.firebaseio.com/';
-const { query } = require('../db/index.js');
+import { query } from '../db/index.js';
 
 /**
  * Retrieves top stories from HN API
  * @async
  * @returns { Object[]} Object Array
  */
-async function getTopStories() {
+export async function getTopStories() {
   console.log('starting');
   await fetch(base + 'v0/topstories.json')
     .then(processChunkedResponse)
@@ -27,7 +27,7 @@ async function getTopStories() {
  *
  * @param {Integer} item
  */
-async function getStory(item) {
+export async function getStory(item) {
   let story = await fetch(base + `v0/item/${item}.json`).then(
     processChunkedResponse
   );
@@ -139,6 +139,5 @@ async function insertQuery(item) {
 }
 
 process.on('message', (message) => {
-  getTopStories();
   process.send({ id: command.id, data: 'finished.' });
 });

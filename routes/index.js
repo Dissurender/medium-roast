@@ -1,5 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
+import { ingestTask } from '../controllers/ingestController.js';
+import apiRouter from './api.js';
 
 // router.use((req, res, next) => {
 //   console.log(`${req.method} -- ${Date.now()}`);
@@ -9,10 +11,9 @@ const router = express.Router();
 router.get('/', function (req, res) {
   res.send('index');
 });
-router.use('/api', require('./api.js'));
-router.use(
-  '/secretingest',
-  require('../controllers/ingestController.js').ingestTask
-);
+router.use('/api', apiRouter);
 
-module.exports = router;
+// TODO: refactor into middleware
+router.use('/secretingest', ingestTask);
+
+export default router;
