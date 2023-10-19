@@ -1,5 +1,5 @@
 const base = 'https://hacker-news.firebaseio.com/';
-const { defaultCache } = require('../utils/Cache.js');
+const { query } = require('../db/index.js');
 
 module.exports = {
   /**
@@ -9,10 +9,6 @@ module.exports = {
    * @returns { Object[]} Object Array
    */
   getTopStories: async (req, res) => {
-    if (defaultCache.getSize() > 0) {
-      return defaultCache;
-    }
-
     console.log('starting');
     await fetch(base + 'v0/topstories.json')
       .then(processChunkedResponse)
@@ -25,7 +21,7 @@ module.exports = {
         res.json(data);
       });
 
-      // TODO: implement the Caching function
+    // TODO: implement the Caching function
     // const results = defaultCache.getAll();
     // console.log(typeof results);
     // res.json(results);
@@ -118,7 +114,6 @@ async function ingestData(data) {
       .then((data) => {
         const type = data.type;
         console.log(type);
-        // defaultCache.put(data.id, data);
         result.push(data);
       });
   }
