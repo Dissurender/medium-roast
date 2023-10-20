@@ -1,9 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import {
-  getTopStories,
-  getAllStories,
-} from '../controllers/ingestController.js';
+import { getTopStories, getMostRecentStory } from '../controllers/ingestController.js';
 import apiRouter from './api.js';
 
 // router.use((req, res, next) => {
@@ -16,19 +13,20 @@ router.get('/', function (req, res) {
 });
 
 router.get('/docs', (req, res) => {
-  res.redirect('http://localhost:52330/docs/index.html')
-})
+  res.redirect('http://localhost:52330/docs/index.html');
+});
 
 router.use('/api', apiRouter);
 
 // TODO: refactor into middleware
 router.use('/secretingest', (req, res) => {
-  getTopStories;
-  res.redirect('/api/top');
+  console.log('/secretingest')
+  getTopStories();
+  // res.redirect('/api/top');
 });
 
-router.use('/secretingestfull', () => {
-  getAllStories;
+router.use('/secretingestfull', (req, res) => {
+  getMostRecentStory();
   // res.redirect('/api/top')
 });
 

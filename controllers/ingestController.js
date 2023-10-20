@@ -1,24 +1,23 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import { insertQuery, selectQuery, checkExists } from '../db/index.cjs';
+import { insertQuery, checkExists } from '../db/index.cjs';
 
 /**
- *
- * @returns {*}
+ * Starting point for the consume function, fetches
+ * the most recent ID and passes the data to consumeData
  */
-export async function getAllStories() {
+export async function getMostRecentStory() {
   const story = await fetch(base + `v0/item/maxitem.json`).then(
     processChunkedResponse
   );
 
-  console.log(story);
+  console.log(story)
 
-  return consumeData(story);
+  consumeData(story);
 }
 
 /**
  * Retrieves top stories from HN API
  * @async
- * @returns { *} Object Array
  */
 export async function getTopStories() {
   console.log('starting');
@@ -26,14 +25,15 @@ export async function getTopStories() {
     .then(processChunkedResponse)
     .then((stories) => {
       // With the Interger[] we pass to the ingestor to fulfull the data
-      return ingestData(stories.slice(0, 10));
+      ingestData(stories.slice(0, 10));
     });
 }
 /**
- *
+ * Get story is a helper function for {@link ingestData}
+ * to recurse the kids field and build out comment trees
  * @param {Integer} item
  */
-export async function getStory(item) {
+async function getStory(item) {
   let story = await fetch(base + `v0/item/${item}.json`).then(
     processChunkedResponse
   );
@@ -58,9 +58,9 @@ export async function getStory(item) {
  * @returns json of accumulated http chunks received
  */
 function processChunkedResponse(response) {
-  var text = '';
-  var reader = response.body.getReader();
-  var decoder = new TextDecoder();
+  let text = '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
 
   return readChunk();
 
@@ -69,12 +69,12 @@ function processChunkedResponse(response) {
   }
 
   function appendChunks(result) {
-    var chunk = decoder.decode(result.value || new Uint8Array(), {
+    const chunk = decoder.decode(result.value || new Uint8Array(), {
       stream: !result.done,
     });
-    console.log('got chunk of', chunk.length, 'bytes');
+
     text += chunk;
-    console.log('text so far is', text.length, 'bytes\n');
+
     if (result.done) {
       return JSON.parse(text);
     } else {
@@ -88,8 +88,7 @@ function processChunkedResponse(response) {
  * This is where the magic is, implementing a simple
  * work queue to hold a local copy of data and draining
  * it to mutate and store into the result array
- * @param {Integer[]} data - Array of ids
- * @returns {*} result - Array of fetch objects
+ * @param {Integer[]} data - Array of IDs
  */
 async function ingestData(data) {
   let queue = [...data];
@@ -103,28 +102,29 @@ async function ingestData(data) {
     );
     if (checkExists(story['id'])) {
       console.log('Story exists...');
-      const found = selectQuery(story['id']);
-      result.push(found);
+      // const found = selectQuery(story['id']);
+      // result.push(found);
       continue;
     } else {
       insertQuery(data);
       result.push(data);
     }
   }
-
-  return result;
 }
 
 /**
+ * ConsumeData is the beginnings of a tree crawler
+ * that will traverse stories and thier comments
+ * recursively.
  *
- *
- * @param {Integer} data
- * @return {*}
+ * @param {Integer} data Starting point ID
  */
 async function consumeData(data) {
   const start = data;
   const end = start - 10;
   let result = [];
+
+  console.log("consuming...")
 
   for (let i = start; i > end; i--) {
     const story = await fetch(base + `v0/item/${i}.json`).then(
@@ -139,6 +139,4 @@ async function consumeData(data) {
       result.push(data);
     }
   }
-
-  return result;
 }

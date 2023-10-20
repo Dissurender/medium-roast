@@ -6,12 +6,12 @@
 
 ## Description
 
-Medium-roast is an API based on [HackerNews](https://news.ycombinator.com) created by [ycombinator](https://www.ycombinator.com)
+Medium-roast is an API based on [HackerNews](https://news.ycombinator.com) created by [ycombinator](https://www.ycombinator.com).
 
-- I built this project to provide a more accessible API for HN, a sister project of [hn-go](https://github.com/Dissurender/hn-go).
-- Medium-roast ingests and creates a local cache of http response data from HN's firebase API.
+- I built this project to provide a more accessible API for HN; a sister project of [hn-go](https://github.com/Dissurender/hn-go), which runs on a local cache structure.
+- Medium-roast ingests and creates a local database of http response data from HN's firebase API.
 - Using this code structure, I focused on cleaning up the data to be friendlier for clients to parse with minimal fetching on their part.
-- Learned concepts: Chunked API responses, local caching structures.
+- Learned concepts: Chunked API responses, Postgres interactions, ES Modules.
 
 ## Table of Contents
 
@@ -24,14 +24,21 @@ Medium-roast is an API based on [HackerNews](https://news.ycombinator.com) creat
 
 ## Features
 
-- Built-in cache for quick access to clean data
-- Cache refresh on interval to add new Stories
+DONE
+- Postgres DB to persist data from fetches to reduce network traffic.
+- Implement chunked http processing.
+- Focus on cyclic complexity to break apart large logic structures.
+
+TODO
+- Refresh on interval to add new Stories.
+- Implement root level logging.
+- Finish consume function for recursive comment or expand DB schemas.
 
 ## Usage
 
 To run locally cd into the project root directory and use `npm run dev` in your terminal.
 
-You may also provide a `.env`ironment with the path `/config/.env`
+You may also provide a `.env`ironment with a connection string.
 
 ## How to Contribute
 

@@ -1,12 +1,22 @@
-const { Client } = require('pg');
+const { Pool } = require('pg');
 
 require('dotenv').config();
 
 console.log('DB init...ingest');
-const client = new Client({
+const pool = new Pool({
   connectionString: process.env.POSTGRES,
+  max: 15,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
-client.connect();
+
+pool.on('connect', () => {
+  console.log('connected to client.');
+});
+
+pool.on('error', (error) => {
+  console.error('Error with client...', error);
+});
 
 /**
  * Standardize DB queries with logging
@@ -17,6 +27,8 @@ client.connect();
  * @returns {Promise}
  */
 async function query(text, values) {
+  const client = await pool.connect();
+
   const start = Date.now();
   let res;
 
@@ -28,6 +40,9 @@ async function query(text, values) {
 
   const duration = Date.now() - start;
   console.log('executed query', { text, values, duration, rows: res.rowCount });
+
+  client.release();
+
   return res;
 }
 
