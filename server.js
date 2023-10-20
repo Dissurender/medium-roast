@@ -2,6 +2,9 @@ import express from 'express';
 const app = express();
 import routes from './routes/index.js';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import morgan from 'morgan';
 const port = process.env.PORT || 8000;
 
