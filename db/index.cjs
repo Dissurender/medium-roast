@@ -8,6 +8,7 @@ const client = new Client({
   database: 'hndb',
   username: 'postgres',
   password: 'linuxmint',
+  
 });
 client.connect();
 
@@ -17,9 +18,9 @@ client.connect();
  * @param {Array} params -- Array of data
  * @returns {Promise}
  */
-async function query(text, params) {
+async function query(text, values) {
   const start = Date.now();
-  const res = await client.query(text, params);
+  const res = await client.query(text, values);
 
   const duration = Date.now() - start;
   console.log('executed query', { text, duration, rows: res.rowCount });

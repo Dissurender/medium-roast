@@ -1,5 +1,5 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import { query } from "../db/index.cjs"
+import { query } from '../db/index.cjs';
 
 /**
  * Retrieves top stories from HN API
@@ -118,19 +118,26 @@ async function ingestData(data) {
 }
 
 async function insertQuery(item) {
-  const template = `INSERT INTO $1(id, by, time, descendants, score, title, url, text) VALUES ($2, $3, $4, $5, $6, $7, $8, $9)`;
-  const values = [
-    item['type'],
+  // const itemType = item['type'] === 'story' ? 'stories' : 'comments';
+  const template =
+    'INSERT INTO stories (id, deleted, type, by, time, dead, descendants, score, title, url, text, parent, kids) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)';
+
+  const value = [
     item['id'],
-    item['by'],
-    item['time'],
-    item['descendants'],
-    item['score'],
-    item['title'],
-    item['url'],
-    item['text'],
+    item['deleted'] || null,
+    item['type'],
+    item['by'] || null,
+    item['time'] || null,
+    item['dead'] || null,
+    item['descendants'] || null,
+    item['score'] || null,
+    item['title'] || null,
+    item['url'] || null,
+    item['text'] || null,
+    item['parent'] || null,
+    item['kids'] || null,
   ];
-  console.log('storyController')
-  const res = await query(template, values);
+  console.log('storyController');
+  const res = await query(template, value);
   console.log(res);
 }
