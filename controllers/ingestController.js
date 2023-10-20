@@ -1,5 +1,16 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import { insertQuery, checkExists } from '../db/index.cjs';
+import { insertQuery, selectQuery, checkExists } from '../db/index.cjs';
+
+
+export async function getAllStories() {
+  const story = await fetch(base + `v0/item/maxitem.json`).then(
+    processChunkedResponse
+  );
+
+  console.log(story)
+
+  return consumeData(story)
+}
 
 /**
  * Retrieves top stories from HN API
@@ -14,14 +25,6 @@ export async function getTopStories() {
       // With the Interger[] we pass to the ingestor to fulfull the data
       return ingestData(stories.slice(0, 10));
     })
-    .then((data) => {
-      console.log(data.length);
-    });
-
-  // TODO: implement the Caching function
-  // const results = defaultCache.getAll();
-  // console.log(typeof results);
-  // res.json(results);
 }
 /**
  *
@@ -32,27 +35,15 @@ export async function getStory(item) {
     processChunkedResponse
   );
 
-  /*
-   * TODO: Unwrap child Promise objects
-   * Using the ingest helper function, create a Promise[]
-   * and replace the child `ID`s with the fetched data
-   */
   const children = await Promise.allSettled(
     story['kids'].map((kid) => {
       return ingestData([kid]);
     })
   );
 
-  // Using the found child objects replace the held kids[int]
+  // Using the found child objects to replace the held kids[int]
   delete story['kids'];
   story['kids'] = children;
-
-  // Object.keys(story).map((key) => {
-  //   if (key === 'kids') {
-  //     delete story[key];
-  //     story[key] = children.map((kid) => kid);
-  //   }
-  // });
 
   console.log(story);
 }
@@ -108,6 +99,34 @@ async function ingestData(data) {
       .then(processChunkedResponse)
     if (checkExists(story['id'])) {
       console.log("Story exists...")
+      const found = selectQuery(story['id'])
+      result.push(found);
+      continue;
+    } else {
+      insertQuery(data);
+      result.push(data);
+    }
+  }
+
+  return result;
+}
+
+/**
+ *
+ *
+ * @param {Integer} data
+ * @return {[Object]} 
+ */
+async function consumeData(data) {
+  const start = data;
+  const end = start - 10;
+  let result = [];
+
+  for (let i = start; i > end; i--) {
+    const story = await fetch(base + `v0/item/${i}.json`)
+      .then(processChunkedResponse)
+    if (checkExists(story['id'])) {
+      console.log("Story exists...")
       result.push(data);
       continue;
     } else {
@@ -115,6 +134,7 @@ async function ingestData(data) {
       result.push(data);
     }
   }
+
 
   return result;
 }

@@ -13,8 +13,10 @@ client.connect();
 
 /**
  * Standardize DB queries with logging
- * @param {String} text -- Query string
- * @param {Array} params -- Array of data
+ * used in {@link checkExists}, {@link selectQuery},
+ * {@link selectAllQuery}, {@link insertQuery}
+ * @param {String} text Query string
+ * @param {Array} values Array of data (optional)
  * @returns {Promise}
  */
 async function query(text, values) {
@@ -28,10 +30,15 @@ async function query(text, values) {
   }
 
   const duration = Date.now() - start;
-  console.log('executed query', { text, duration, rows: res.rowCount });
+  console.log('executed query', { text, values, duration, rows: res.rowCount });
   return res;
 }
 
+/**
+ * Query the database to check if we have the story.
+ * @param {Integer} id
+ * @returns {boolean}
+ */
 async function checkExists(id) {
   const template = 'SELECT * from stories WHERE id=$1';
   const value = [id];
@@ -39,12 +46,22 @@ async function checkExists(id) {
   try {
     console.log('checkExist');
     const res = await query(template, value);
-    console.log(res['rows'][0]);
+    if (res['rowCount'] > 0) {
+      return true;
+    } else {
+      return false;
+    }
   } catch (error) {
     console.error(error);
   }
 }
 
+/**
+ *
+ *
+ * @param {*} id
+ * @return {*}
+ */
 async function selectQuery(id) {
   const template = 'SELECT * from stories WHERE id=$1';
   const value = [id];
@@ -52,12 +69,18 @@ async function selectQuery(id) {
   try {
     console.log('selectQuery');
     const res = await query(template, value);
-    return res['rows'][0];
+    const result = res['rows'][0];
+    return result;
   } catch (error) {
     console.error(error);
   }
 }
 
+/**
+ *
+ *
+ * @return {*}
+ */
 async function selectAllQuery() {
   const template = 'SELECT * from stories';
 
@@ -70,8 +93,12 @@ async function selectAllQuery() {
   }
 }
 
+/**
+ *
+ *
+ * @param {*} item
+ */
 async function insertQuery(item) {
-  // const itemType = item['type'] === 'story' ? 'stories' : 'comments';
   const template =
     'INSERT INTO stories (id, deleted, type, by, time, dead, descendants, score, title, url, text, parent, kids) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)';
 
