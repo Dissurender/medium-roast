@@ -1,5 +1,4 @@
-
-
+/* eslint-disable no-unused-vars */
 function roughSizeOfObject(object) {
   var objectList = [];
   var stack = [object];

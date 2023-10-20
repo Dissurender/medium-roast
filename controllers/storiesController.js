@@ -1,13 +1,13 @@
-import { selectQuery, selectAllQuery } from "../db/index.cjs";
+import { selectQuery, selectAllQuery } from '../db/index.cjs';
 /**
  * Retrieves top stories from HN API
  * @async
  * @method getAll returns all Objects in the namespace
- * @returns { Object[]} Object Array
+ * @returns {*} Object Array
  */
 export const getTopStories = async (req, res) => {
   const results = await selectAllQuery();
-  res.json(results)
+  res.json(results);
 };
 
 /**
