@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { ingestTask } from '../controllers/ingestController.js';
+import { getTopStories } from '../controllers/ingestController.js';
 import apiRouter from './api.js';
 
 // router.use((req, res, next) => {
@@ -14,6 +14,6 @@ router.get('/', function (req, res) {
 router.use('/api', apiRouter);
 
 // TODO: refactor into middleware
-router.use('/secretingest', ingestTask);
+router.use('/secretingest', getTopStories);
 
 export default router;
