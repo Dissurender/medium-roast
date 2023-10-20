@@ -1,11 +1,10 @@
 const { Client } = require('pg');
 
-const temp = `postgresql://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}:${process.env.DATABASE_PORT}/hndb`;
+require('dotenv').config();
 
-// TODO: fix .env values
 console.log('DB init...ingest');
 const client = new Client({
-  temp,
+  connectionString: process.env.POSTGRES,
 });
 client.connect();
 
