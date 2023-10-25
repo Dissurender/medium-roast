@@ -1,5 +1,9 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import { prisma, upsertQuery } from '../db/index.js';
+import {
+  selectStoryQuery,
+  selectCommentQuery,
+  createQuery,
+} from '../db/index.js';
 
 /**
  * Starting point for the consume function, fetches
@@ -28,15 +32,8 @@ export async function getTopStories() {
   //     // With the Interger[] we pass to the ingestor to fulfull the data
   //     ingestData(stories.slice(0, 100));
   //   });
-  const result = await ingestData(testData.slice(0, 2));
-
-  result.forEach((element) => {
-    try {
-      upsertQuery(element);
-    } catch (error) {
-      console.error(error);
-    }
-  });
+  const result = await ingestData(testData.slice(0, 10));
+  console.log(result.length, ' items ingested');
 }
 
 /**
@@ -71,30 +68,55 @@ function processChunkedResponse(response) {
   }
 }
 
-// DOES THIS EVEN WORK?
+export async function checkDB(id, type) {
+  console.log('lookup: ', id, type);
+
+  if (type === 'story') {
+    const story = await selectStoryQuery(id);
+    console.log('story check: ', story);
+    return story;
+  } else if (type === 'comment') {
+    const comment = await selectCommentQuery(id);
+    console.log('comment check: ', comment);
+    return comment;
+  }
+}
+
+export async function fetchFromHN(id) {
+  const story = await fetch(base + `v0/item/${id}.json`).then(
+    processChunkedResponse
+  );
+  return story;
+}
+
 /**
  * This is where the magic is, implementing a simple
  * work queue to hold a local copy of data and draining
  * it to mutate and store into the result array
  * @param {Integer[]} data - Array of IDs
  */
-async function ingestData(data) {
-  console.log('\ningest start: ', data);
+export async function ingestData(data, type) {
   let queue = [...data];
   let result = [];
 
-  while (queue.length > 0) {
-    const cursor = queue.pop();
+  for (let i = 0; i < queue.length; i++) {
+    let selectItem = await checkDB(queue[i], type);
 
-    const story = await fetch(base + `v0/item/${cursor}.json`).then(
-      processChunkedResponse
-    );
+    if (!selectItem) {
+      console.log('story not found');
+      console.log('fetching: ', queue[i]);
 
-    if (story.kids && checkComments(story.kids)) {
-      const child = await getComments(story);
-      result.push(child);
+      selectItem = await fetchFromHN(queue[i]);
+      createQuery(selectItem);
+    } else {
+      console.log('story found..');
     }
+
+    // console.log('cursor: ', selectItem);
+
+    result.push(selectItem);
   }
+
   return result;
 }
 
@@ -103,33 +125,16 @@ async function ingestData(data) {
  * to recurse the kids field and build out comment trees
  * @param {Integer} item
  */
-async function getComments(item) {
-  console.log('getting comments...');
-  let story = await fetch(base + `v0/item/${item.id}.json`).then(
-    processChunkedResponse
-  );
+export async function getComments(item, type) {
+  console.log('getting comments...', item.id);
+  let story = await checkDB(item.id, type);
 
-  if (story.kids) {
-    const children = await ingestData(story.kids);
+  const children = await ingestData(story.kids, type);
 
-    // Using the found child objects to replace the held kids[int]
-    delete story['kids'];
-    story['kids'] = children;
+  delete story['kids'];
+  story['kids'] = children;
 
-    console.log('children replaced...');
-  }
   return story;
-}
-
-function checkComments(items) {
-  console.log('checking comments', items);
-  for (let i = 0; i < items.length; i++) {
-    if (typeof items[i] !== 'number') {
-      return false;
-    }
-  }
-  console.log('comments found.');
-  return true;
 }
 
 /**
@@ -139,20 +144,20 @@ function checkComments(items) {
  *
  * @param {Integer} data Starting point ID
  */
-async function consumeData(data) {
-  const start = data;
-  const end = start - 100;
-  let result = [];
+// async function consumeData(data) {
+//   const start = data;
+//   const end = start - 100;
+//   let result = [];
 
-  console.log('consuming...');
+//   console.log('consuming...');
 
-  for (let i = start; i > end; i--) {
-    const story = await fetch(base + `v0/item/${i}.json`).then(
-      processChunkedResponse
-    );
-    result.push(upsertQuery(story));
-  }
-}
+//   for (let i = start; i > end; i--) {
+//     const story = await fetch(base + `v0/item/${i}.json`).then(
+//       processChunkedResponse
+//     );
+//     result.push(createQuery(story));
+//   }
+// }
 
 const testData = [
   38012032, 38012662, 38012008, 38013668, 38012263, 38012311, 38011432,

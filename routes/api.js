@@ -1,8 +1,13 @@
 import express from 'express';
 const router = express.Router();
-import { getStory, getTopStories } from '../controllers/storiesController.js';
+import {
+  getComment,
+  getStory,
+  getTopStories,
+} from '../controllers/storiesController.js';
 
 router.use('/top', getTopStories);
-router.use('/:id', getStory);
+router.use('/stories/:id', getStory);
+router.use('/comments/:id', getComment);
 
 export default router;

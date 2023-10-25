@@ -8,12 +8,26 @@ export const prisma = new PrismaClient();
  * @param {Result} res
  * @returns {Story}
  */
-export const selectQuery = async (req, res) => {
-  const { id } = req.body;
+export const selectStoryQuery = async (id) => {
   const result = await prisma.story.findUnique({
     where: { id: Number(id) },
   });
-  res.json(result);
+  console.log('selectStoryQ: ', id, result);
+  return result;
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Result} res
+ * @returns {Comment}
+ */
+export const selectCommentQuery = async (id) => {
+  const result = await prisma.story.findUnique({
+    where: { id: Number(id) },
+  });
+  console.log('selectCommentQ: ', id, result);
+  return result;
 };
 
 /**
@@ -29,7 +43,7 @@ export const selectAllQuery = async () => {
       time: 'desc',
     },
   });
-  console.log(result);
+  return result;
 };
 
 /**
@@ -37,53 +51,44 @@ export const selectAllQuery = async () => {
  * @param {Story} story
  * @returns {Story}
  */
-export const upsertQuery = async (story) => {
+export const createQuery = async (story) => {
   let result;
 
-  if (story.type === 'story') {
-    result = await prisma.story.upsert({
-      where: {
-        id: story.id,
-      },
-      update: {},
-      create: {
+  if (story.story === 'story') {
+    console.log('creating story: ', story.id);
+    result = await prisma.story.create({
+      data: {
         id: story.id,
         by: story.by,
         time: story.time,
         descendants: story.descendants,
         deleted: story.deleted,
         dead: story.dead,
-        kids: {
-          connectOrCreate: [story["kids"]]
-        },
+        kids: story.kids,
         score: story.score,
         title: story.title,
         url: story.url,
       },
     });
-  } else if (story.type === 'comment') {
-    result = await prisma.comment.upsert({
-      where: {
-        id: story.id,
-      },
-      update: {},
-      create: {
+  } else if (story.comment === 'comment') {
+    console.log('creating comment: ', story.id);
+    result = await prisma.comment.create({
+      data: {
         id: story.id,
         by: story.by,
         time: story.time,
         descendants: story.descendants,
         deleted: story.deleted,
         dead: story.dead,
-        kids: {
-          connect: [story["kids"]]
-        },
+        kids: story.kids,
         score: story.score,
         title: story.title,
         url: story.url,
-        Story: story.parent,
+        parent: story.parent,
       },
     });
   }
 
+  console.log('created: ', result);
   return result;
 };
