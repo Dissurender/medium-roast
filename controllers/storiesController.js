@@ -1,7 +1,5 @@
-import {
-  selectAllQuery,
-} from '../db/index.js';
-import { ingestData, checkDB, getComments } from './ingestController.js';
+import { selectAllQuery } from '../db/index.js';
+import { checkDB, getComments } from './ingestController.js';
 /**
  * Retrieves top stories from HN API
  * @async
@@ -19,15 +17,10 @@ export const getTopStories = async (req, res) => {
  * @param {Response} res
  */
 export const getStory = async (req, res) => {
-  const story = await checkDB(req.params.id, 'story');
+  let story = await checkDB(req.params.id, 'story');
   console.log('getStory result: ', story);
 
-  if (story.kids.length > 0) {
-    const kids = await getComments(story, 'comment');
-
-    delete story['kids'];
-    story['kids'] = kids;
-  }
+  story = await getComments(story, 'comment');
 
   res.json(story);
 };
@@ -38,15 +31,10 @@ export const getStory = async (req, res) => {
  * @param {Response} res
  */
 export const getComment = async (req, res) => {
-  const comment = await checkDB(req.params.id, 'comment');
+  let comment = await checkDB(req.params.id, 'comment');
   console.log('getComment result: ', comment);
 
-  if (comment) {
-    const kids = await getComments(comment, 'comment');
-
-    delete comment['kids'];
-    comment['kids'] = kids;
-  }
+  comment = await getComments(comment, 'comment');
 
   res.json(comment);
 };

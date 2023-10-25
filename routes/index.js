@@ -18,10 +18,10 @@ router.get('/docs', (req, res) => {
 router.use('/api', apiRouter);
 
 // TODO: refactor into middleware
-router.use('/secretingest', () => {
+router.use('/secretingest', (req, res) => {
   console.log('/secretingest');
   getTopStories();
-  // res.redirect('/api/top');
+  res.redirect('/api/top');
 });
 
 router.use('/secretingestfull', () => {

@@ -1,6 +1,9 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import {createQuery, selectCommentQuery, selectStoryQuery,} from '../db/index.js';
-
+import {
+  createQuery,
+  selectCommentQuery,
+  selectStoryQuery,
+} from '../db/index.js';
 
 export async function getMostRecentStory() {
   // const story = await fetch(base + `v0/maxitem.json`).then(
@@ -19,13 +22,14 @@ export async function getMostRecentStory() {
  */
 export async function getTopStories() {
   console.log('starting');
-  // await fetch(base + 'v0/topstories.json')
-  //   .then(processChunkedResponse)
-  //   .then((stories) => {
-  //     // With the Interger[] we pass to the ingestor to fulfull the data
-  //     ingestData(stories.slice(0, 100));
-  //   });
-  const result = await ingestData(testData.slice(0, 50), "story");
+  const topStories = await fetch(base + 'v0/topstories.json').then(
+    processChunkedResponse
+  );
+
+  // With the Interger[] we pass to the ingestor to fulfull the data
+  const result = await ingestData(topStories.slice(0, 100), 'story');
+
+  // const result = await ingestData(testData.slice(0, 100), 'story');
   console.log(result.length, ' items ingested');
 }
 
@@ -76,9 +80,7 @@ export async function checkDB(id, type) {
 }
 
 export async function fetchFromHN(id) {
-  return await fetch(base + `v0/item/${id}.json`).then(
-      processChunkedResponse
-  );
+  return await fetch(base + `v0/item/${id}.json`).then(processChunkedResponse);
 }
 
 /**
@@ -122,9 +124,22 @@ export async function ingestData(data, type) {
 export async function getComments(item, type) {
   console.log('getting comments...', item.id, type);
 
-  const children = await ingestData(item.kids, type);
+  if (!item.kids) return item;
+  const kids = await ingestData(item.kids, type);
 
-  return children;
+  let newKids = [];
+
+  for (let i = 0; i < kids.length; i++) {
+    console.log('going deeper....');
+    const temp = await getComments(kids[i], 'comment');
+    console.log(temp);
+    newKids.push(temp);
+  }
+
+  delete item['kids'];
+  item['kids'] = newKids;
+
+  return item;
 }
 
 /**
