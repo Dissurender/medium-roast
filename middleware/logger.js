@@ -16,7 +16,7 @@ export function requestLogger(req, res, next) {
     time.getMinutes(),
   ];
 
-  const requestTime = `${month}-${day}-${year} (${hour}:${minute})`
+  const requestTime = `${month}-${day}-${year} (${hour}:${minute})`;
 
   console.log(`Request data: ${req.method} -- ${req.url} ${requestTime}`);
 

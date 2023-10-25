@@ -1,4 +1,4 @@
-import { selectQuery, selectAllQuery } from '../db/index.cjs';
+import { selectQuery, selectAllQuery } from '../db/index.js';
 /**
  * Retrieves top stories from HN API
  * @async

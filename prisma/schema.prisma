@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Story {
+  id          Int       @id
+  by          String?   @db.VarChar(255)
+  time        Int?
+  descendants Int      @default(0)
+  deleted     Boolean?  @default(false)
+  dead        Boolean?  @default(false)
+  kids        Comment[]
+  score       Int?
+  title       String?   @db.VarChar(255)
+  url         String?   @db.VarChar(255)
+}
+
+model Comment {
+  id        Int       @id
+  by        String?   @db.VarChar(255)
+  time      Int?
+  deleted   Boolean?  @default(false)
+  dead      Boolean?  @default(false)
+  text      String?   @db.Text
+  kids      Comment[] @relation("parentComment")
+  Story     Story     @relation(fields: [storyId], references: [id])
+  storyId   Int
+  Comment   Comment?  @relation("parentComment", fields: [commentId], references: [id])
+  commentId Int?
+}
