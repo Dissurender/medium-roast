@@ -43,47 +43,47 @@ export const selectAllQuery = async () => {
 
 /**
  *
- * @param {Story} story
+ * @param {Story} item
  * @returns {Story}
  */
-export const createQuery = async (story) => {
+export const createQuery = async (item, type) => {
   let result;
 
-  if (story.story === 'story') {
-    console.log('creating story: ', story.id);
+  if (type === 'story') {
+    console.log('creating story: ', item.id);
     result = await prisma.story.create({
       data: {
-        id: story.id,
-        by: story.by,
-        time: story.time,
-        descendants: story.descendants,
-        deleted: story.deleted,
-        dead: story.dead,
-        kids: story.kids,
-        score: story.score,
-        title: story.title,
-        url: story.url,
+        id: item.id,
+        by: item.by,
+        time: item.time,
+        descendants: item.descendants,
+        deleted: item.deleted,
+        dead: item.dead,
+        kids: item.kids,
+        score: item.score,
+        title: item.title,
+        url: item.url,
       },
     });
-  } else if (story.comment === 'comment') {
-    console.log('creating comment: ', story.id);
+  } else if (type === 'comment') {
+    console.log('creating comment: ', item.id);
     result = await prisma.comment.create({
       data: {
-        id: story.id,
-        by: story.by,
-        time: story.time,
-        descendants: story.descendants,
-        deleted: story.deleted,
-        dead: story.dead,
-        kids: story.kids,
-        score: story.score,
-        title: story.title,
-        url: story.url,
-        parent: story.parent,
+        id: item.id,
+        by: item.by,
+        time: item.time,
+        descendants: item.descendants,
+        deleted: item.deleted,
+        dead: item.dead,
+        kids: item.kids,
+        score: item.score,
+        title: item.title,
+        url: item.url,
+        text: item.text,
+        parent: item.parent,
       },
     });
   }
 
-  console.log('created: ', result);
   return result;
 };

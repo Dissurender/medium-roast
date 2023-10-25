@@ -95,12 +95,12 @@ export async function ingestData(data, type) {
   for (let i = 0; i < queue.length; i++) {
     let selectItem = await checkDB(queue[i], type);
 
-    if (!selectItem) {
-      console.log('story not found');
+    if (selectItem === null) {
+      console.log(type, 'not found');
       console.log('fetching: ', queue[i]);
 
       selectItem = await fetchFromHN(queue[i]);
-      createQuery(selectItem);
+      createQuery(selectItem, type);
     } else {
       console.log('story found..');
     }

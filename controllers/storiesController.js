@@ -38,15 +38,15 @@ export const getStory = async (req, res) => {
  * @param {Response} res
  */
 export const getComment = async (req, res) => {
-  const story = await checkDB(req.params.id, 'comment');
-  console.log('getComment result: ', story);
+  const comment = await checkDB(req.params.id, 'comment');
+  console.log('getComment result: ', comment);
 
-  if (story) {
-    const kids = await ingestData(story.kids, 'comment');
+  if (comment) {
+    const kids = await getComments(comment, 'comment');
 
-    delete story['kids'];
-    story['kids'] = kids;
+    delete comment['kids'];
+    comment['kids'] = kids;
   }
 
-  res.json(story);
+  res.json(comment);
 };
