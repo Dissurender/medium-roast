@@ -5,11 +5,11 @@ import {
   selectStoryQuery,
 } from '../db/index.js';
 
+
 export async function getMostRecentStory() {
-  // const story = await fetch(base + `v0/maxitem.json`).then(
-  //   processChunkedResponse
-  // );
-  const story = testData[0];
+  const story = await fetch(base + `v0/maxitem.json`).then(
+    processChunkedResponse
+  );
 
   console.log('the story: ', story);
 
