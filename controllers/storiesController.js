@@ -22,7 +22,7 @@ export const getStory = async (req, res) => {
   const story = await checkDB(req.params.id, 'story');
   console.log('getStory result: ', story);
 
-  if (story) {
+  if (story.kids.length > 0) {
     const kids = await getComments(story, 'comment');
 
     delete story['kids'];

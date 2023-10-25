@@ -1,6 +1,7 @@
 .vscode
 package-lock.json
 .nyc
+.idea
 
 # Logs
 logs

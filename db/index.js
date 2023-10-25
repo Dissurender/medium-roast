@@ -1,12 +1,11 @@
-import { PrismaClient } from '@prisma/client';
+import {PrismaClient} from '@prisma/client';
 
 export const prisma = new PrismaClient();
 
 /**
  *
- * @param {Request} req
- * @param {Result} res
  * @returns {Story}
+ * @param id
  */
 export const selectStoryQuery = async (id) => {
   const result = await prisma.story.findUnique({
@@ -18,12 +17,11 @@ export const selectStoryQuery = async (id) => {
 
 /**
  *
- * @param {Request} req
- * @param {Result} res
  * @returns {Comment}
+ * @param id
  */
 export const selectCommentQuery = async (id) => {
-  const result = await prisma.story.findUnique({
+  const result = await prisma.comment.findUnique({
     where: { id: Number(id) },
   });
   console.log('selectCommentQ: ', id, result);
@@ -32,18 +30,15 @@ export const selectCommentQuery = async (id) => {
 
 /**
  *
- * @param {Request} req
- * @param {Result} res
  * @returns {Story[]}
  */
 export const selectAllQuery = async () => {
-  const result = await prisma.story.findMany({
+  return prisma.story.findMany({
     take: 100,
     orderBy: {
       time: 'desc',
     },
   });
-  return result;
 };
 
 /**

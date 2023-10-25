@@ -1,14 +1,7 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import {
-  selectStoryQuery,
-  selectCommentQuery,
-  createQuery,
-} from '../db/index.js';
+import {createQuery, selectCommentQuery, selectStoryQuery,} from '../db/index.js';
 
-/**
- * Starting point for the consume function, fetches
- * the most recent ID and passes the data to consumeData
- */
+
 export async function getMostRecentStory() {
   // const story = await fetch(base + `v0/maxitem.json`).then(
   //   processChunkedResponse
@@ -17,7 +10,7 @@ export async function getMostRecentStory() {
 
   console.log('the story: ', story);
 
-  consumeData(story);
+  // consumeData(story);
 }
 
 /**
@@ -32,7 +25,7 @@ export async function getTopStories() {
   //     // With the Interger[] we pass to the ingestor to fulfull the data
   //     ingestData(stories.slice(0, 100));
   //   });
-  const result = await ingestData(testData.slice(0, 10));
+  const result = await ingestData(testData.slice(0, 50), "story");
   console.log(result.length, ' items ingested');
 }
 
@@ -83,10 +76,9 @@ export async function checkDB(id, type) {
 }
 
 export async function fetchFromHN(id) {
-  const story = await fetch(base + `v0/item/${id}.json`).then(
-    processChunkedResponse
+  return await fetch(base + `v0/item/${id}.json`).then(
+      processChunkedResponse
   );
-  return story;
 }
 
 /**
@@ -94,6 +86,7 @@ export async function fetchFromHN(id) {
  * work queue to hold a local copy of data and draining
  * it to mutate and store into the result array
  * @param {Integer[]} data - Array of IDs
+ * @param type
  */
 export async function ingestData(data, type) {
   let queue = [...data];
@@ -112,7 +105,7 @@ export async function ingestData(data, type) {
       console.log('story found..');
     }
 
-    // console.log('cursor: ', selectItem);
+    console.log('cursor: ', selectItem);
 
     result.push(selectItem);
   }
@@ -123,18 +116,15 @@ export async function ingestData(data, type) {
 /**
  * Get story is a helper function for {@link ingestData}
  * to recurse the kids field and build out comment trees
- * @param {Integer} item
+ * @param {Story} item
+ * @param type
  */
 export async function getComments(item, type) {
-  console.log('getting comments...', item.id);
-  let story = await checkDB(item.id, type);
+  console.log('getting comments...', item.id, type);
 
-  const children = await ingestData(story.kids, type);
+  const children = await ingestData(item.kids, type);
 
-  delete story['kids'];
-  story['kids'] = children;
-
-  return story;
+  return children;
 }
 
 /**
