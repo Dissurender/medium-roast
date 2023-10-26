@@ -4,23 +4,27 @@ import {
   selectCommentQuery,
   selectStoryQuery,
 } from '../db/index.js';
+import { logger } from '../utils/winston.js';
 
+// TODO: function to crawl the IDs periodically
 export async function getMostRecentStory() {
   const story = await fetch(base + `v0/maxitem.json`).then(
     processChunkedResponse
   );
 
-  console.log('the story: ', story);
+  logger.info('the story: ' + story.id);
 
   // consumeData(story);
 }
 
 /**
- * Retrieves top stories from HN API
+ * retrieves the top stories from the Hacker News API.
+ * It then passes the retrieved stories to the {@link ingestData}
+ * function to process and store them in a database.
  * @async
  */
 export async function getTopStories() {
-  console.log('starting');
+  logger.info('starting Top Stories..');
   const topStories = await fetch(base + 'v0/topstories.json').then(
     processChunkedResponse
   );
@@ -28,22 +32,24 @@ export async function getTopStories() {
   // With the Interger[] we pass to the ingestor to fulfull the data
   const result = await ingestData(topStories.slice(0, 100), 'story');
 
-  // const result = await ingestData(testData.slice(0, 100), 'story');
-  console.log(result.length, ' items ingested');
+  logger.info(`${result.length} items ingested`);
 }
 
 /**
  * This helper function receives a ByteStream and mutates
  * into a String using 9th Level Magic then parses to Json.
  * @param {Promise<Response>} response - Response
- * @returns json of accumulated http chunks received
+ * @returns Object of accumulated http chunks received
  */
 function processChunkedResponse(response) {
   let text = '';
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
 
-  return readChunk();
+  return readChunk().catch((error) => {
+    logger.error('Error reading chunk: ' + error);
+    throw new Error(error);
+  });
 
   function readChunk() {
     return reader.read().then(appendChunks);
@@ -57,7 +63,12 @@ function processChunkedResponse(response) {
     text += chunk;
 
     if (result.done) {
-      return JSON.parse(text);
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        logger.error('Error parsing JSON:' + error);
+        throw new Error(error);
+      }
     } else {
       return readChunk();
     }
@@ -65,22 +76,21 @@ function processChunkedResponse(response) {
 }
 
 /**
- *
- *
- * @param {*} id
- * @param {*} type
- * @return {*} 
+ * Query database for given ID and return if found or null.
+ * @param {Number} id
+ * @param {String} type
+ * @return {Promise<Object>} Story or Comment Object
  */
 export async function checkDB(id, type) {
-  console.log('lookup: ', id, type);
+  logger.info('lookup: ' + `${id} ${type}`);
 
   if (type === 'story') {
     const story = await selectStoryQuery(id);
-    console.log('story check: ', story);
+    logger.info('story check: ' + id);
     return story;
   } else if (type === 'comment') {
     const comment = await selectCommentQuery(id);
-    console.log('comment check: ', comment);
+    logger.info('comment check: ' + id);
     return comment;
   }
 }
@@ -93,10 +103,16 @@ export async function fetchFromHN(id) {
  * This is where the magic is, implementing a simple
  * work queue to hold a local copy of data and draining
  * it to mutate and store into the result array
- * @param {Integer[]} data - Array of IDs
- * @param type
+ * @param {Array<Number>} data - Array of IDs
+ * @param {String} type
+ * @returns {Array<Object>}
  */
 export async function ingestData(data, type) {
+  if (data === null) {
+    logger.error('IngestData parameter `data` is null.');
+    return;
+  }
+
   let queue = [...data];
   let result = [];
 
@@ -104,12 +120,12 @@ export async function ingestData(data, type) {
     let selectItem = await checkDB(queue[i], type);
 
     if (selectItem === null) {
-      console.log(type, 'not found.');
+      logger.info(`${type} not found.`);
 
       selectItem = await fetchFromHN(queue[i]);
       createQuery(selectItem, type);
     } else {
-      console.log('story found.');
+      logger.info('story found.');
     }
 
     result.push(selectItem);
@@ -125,7 +141,11 @@ export async function ingestData(data, type) {
  * @param type
  */
 export async function getComments(item, type) {
-  console.log('getting comments...', item.id, type);
+  if (!item.kids || typeof item !== 'object') {
+    logger.warn(`${item} is not valid.`);
+    return item;
+  }
+  logger.info('Getting comments for ' + item.id);
 
   if (!item.kids) return item;
   const kids = await ingestData(item.kids, type);
@@ -133,14 +153,11 @@ export async function getComments(item, type) {
   let newKids = [];
 
   for (let i = 0; i < kids.length; i++) {
-    console.log('going deeper....');
     const temp = await getComments(kids[i], 'comment');
-    console.log(temp);
     newKids.push(temp);
   }
 
-  delete item['kids'];
-  item['kids'] = newKids;
+  const newItem = { ...item, kids: newKids };
 
-  return item;
+  return newItem;
 }

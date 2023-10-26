@@ -17,5 +17,5 @@ app.use(routes);
 // job.start()
 
 app.listen(port, () => {
-  `Server is running on port: http://localhost:${port}/`;
+  console.log(`Server is running on port: http://localhost:${port}/`);
 });

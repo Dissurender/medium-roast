@@ -1,211 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
+<head>
+    <meta charset="utf-8">
     <title>JSDoc: Source: ingestController.js</title>
 
-    <script src="scripts/prettify/prettify.js"></script>
-    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link
-      type="text/css"
-      rel="stylesheet"
-      href="styles/prettify-tomorrow.css"
-    />
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
-  </head>
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
 
-  <body>
-    <div id="main">
-      <h1 class="page-title">Source: ingestController.js</h1>
+<body>
 
-      <section>
+<div id="main">
+
+    <h1 class="page-title">Source: ingestController.js</h1>
+
+    
+
+
+
+    
+    <section>
         <article>
-          <pre
-            class="prettyprint source linenums"
-          ><code>const base = 'https://hacker-news.firebaseio.com/';
-import { insertQuery, selectQuery, checkExists } from '../db/index.cjs';
+            <pre class="prettyprint source linenums"><code>const base = 'https://hacker-news.firebaseio.com/';
+import {
+  createQuery,
+  selectCommentQuery,
+  selectStoryQuery,
+} from '../db/index.js';
+import { logger } from '../utils/winston.js';
 
-/**
- * 
- * @returns {*}
- */
-export async function getAllStories() {
-  const story = await fetch(base + `v0/item/maxitem.json`).then(
+// TODO: function to crawl the IDs periodically
+export async function getMostRecentStory() {
+  const story = await fetch(base + `v0/maxitem.json`).then(
     processChunkedResponse
   );
 
-  console.log(story)
+  logger.info('the story: ' + story.id);
 
-  return consumeData(story)
+  // consumeData(story);
 }
 
 /**
- * Retrieves top stories from HN API
+ * retrieves the top stories from the Hacker News API.
+ * It then passes the retrieved stories to the {@link ingestData}
+ * function to process and store them in a database.
  * @async
- * @returns { *} Object Array
  */
 export async function getTopStories() {
-  console.log('starting');
-  await fetch(base + 'v0/topstories.json')
-    .then(processChunkedResponse)
-    .then((stories) => {
-      // With the Interger[] we pass to the ingestor to fulfull the data
-      return ingestData(stories.slice(0, 10));
-    })
-}
-/**
- *
- * @param {Integer} item
- */
-export async function getStory(item) {
-  let story = await fetch(base + `v0/item/${item}.json`).then(
+  logger.info('starting Top Stories..');
+  const topStories = await fetch(base + 'v0/topstories.json').then(
     processChunkedResponse
   );
 
-  const children = await Promise.allSettled(
-    story['kids'].map((kid) => {
-      return ingestData([kid]);
-    })
-  );
+  // With the Interger[] we pass to the ingestor to fulfull the data
+  const result = await ingestData(topStories.slice(0, 100), 'story');
 
-  // Using the found child objects to replace the held kids[int]
-  delete story['kids'];
-  story['kids'] = children;
-
-  console.log(story);
+  logger.info(`${result.length} items ingested`);
 }
 
 /**
  * This helper function receives a ByteStream and mutates
  * into a String using 9th Level Magic then parses to Json.
  * @param {Promise&lt;Response>} response - Response
- * @returns json of accumulated http chunks received
+ * @returns Object of accumulated http chunks received
  */
 function processChunkedResponse(response) {
-  var text = '';
-  var reader = response.body.getReader();
-  var decoder = new TextDecoder();
+  let text = '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
 
-  return readChunk();
+  return readChunk().catch((error) => {
+    logger.error('Error reading chunk: ' + error);
+    throw new Error(error);
+  });
 
   function readChunk() {
     return reader.read().then(appendChunks);
   }
 
   function appendChunks(result) {
-    var chunk = decoder.decode(result.value || new Uint8Array(), {
+    const chunk = decoder.decode(result.value || new Uint8Array(), {
       stream: !result.done,
     });
-    console.log('got chunk of', chunk.length, 'bytes');
+
     text += chunk;
-    console.log('text so far is', text.length, 'bytes\n');
+
     if (result.done) {
-      return JSON.parse(text);
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        logger.error('Error parsing JSON:' + error);
+        throw new Error(error);
+      }
     } else {
       return readChunk();
     }
   }
 }
 
-// DOES THIS EVEN WORK?
+/**
+ * Query database for given ID and return if found or null.
+ * @param {Number} id
+ * @param {String} type
+ * @return {Promise&lt;Object>} Story or Comment Object
+ */
+export async function checkDB(id, type) {
+  logger.info('lookup: ' + `${id} ${type}`);
+
+  if (type === 'story') {
+    const story = await selectStoryQuery(id);
+    logger.info('story check: ' + id);
+    return story;
+  } else if (type === 'comment') {
+    const comment = await selectCommentQuery(id);
+    logger.info('comment check: ' + id);
+    return comment;
+  }
+}
+
+export async function fetchFromHN(id) {
+  return await fetch(base + `v0/item/${id}.json`).then(processChunkedResponse);
+}
+
 /**
  * This is where the magic is, implementing a simple
  * work queue to hold a local copy of data and draining
  * it to mutate and store into the result array
- * @param {Integer[]} data - Array of ids
- * @returns {*} result - Array of fetch objects
+ * @param {Array&lt;Number>} data - Array of IDs
+ * @param {String} type
+ * @returns {Array&lt;Object>}
  */
-async function ingestData(data) {
+export async function ingestData(data, type) {
+  if (data === null) {
+    logger.error('IngestData parameter `data` is null.');
+    return;
+  }
+
   let queue = [...data];
   let result = [];
 
-  while (queue.length > 0) {
-    const cursor = queue.pop();
+  for (let i = 0; i &lt; queue.length; i++) {
+    let selectItem = await checkDB(queue[i], type);
 
-    const story = await fetch(base + `v0/item/${cursor}.json`)
-      .then(processChunkedResponse)
-    if (checkExists(story['id'])) {
-      console.log("Story exists...")
-      const found = selectQuery(story['id'])
-      result.push(found);
-      continue;
+    if (selectItem === null) {
+      logger.info(`${type} not found.`);
+
+      selectItem = await fetchFromHN(queue[i]);
+      createQuery(selectItem, type);
     } else {
-      insertQuery(data);
-      result.push(data);
+      logger.info('story found.');
     }
+
+    result.push(selectItem);
   }
 
   return result;
 }
 
 /**
- *
- *
- * @param {Integer} data
- * @return {*} 
+ * Get story is a helper function for {@link ingestData}
+ * to recurse the kids field and build out comment trees
+ * @param {Story} item
+ * @param type
  */
-async function consumeData(data) {
-  const start = data;
-  const end = start - 10;
-  let result = [];
+export async function getComments(item, type) {
+  if (!item.kids || typeof item !== 'object') {
+    logger.warn(`${item} is not valid.`);
+    return item;
+  }
+  logger.info('Getting comments for ' + item.id);
 
-  for (let i = start; i > end; i--) {
-    const story = await fetch(base + `v0/item/${i}.json`)
-      .then(processChunkedResponse)
-    if (checkExists(story['id'])) {
-      console.log("Story exists...")
-      result.push(data);
-      continue;
-    } else {
-      insertQuery(data);
-      result.push(data);
-    }
+  if (!item.kids) return item;
+  const kids = await ingestData(item.kids, type);
+
+  let newKids = [];
+
+  for (let i = 0; i &lt; kids.length; i++) {
+    const temp = await getComments(kids[i], 'comment');
+    newKids.push(temp);
   }
 
+  const newItem = { ...item, kids: newKids };
 
-  return result;
+  return newItem;
 }
 </code></pre>
         </article>
-      </section>
-    </div>
+    </section>
 
-    <nav>
-      <h2><a href="index.html">Home</a></h2>
-      <h3>Global</h3>
-      <ul>
-        <li><a href="global.html#consumeData">consumeData</a></li>
-        <li>
-          <a href="global.html#getAllreturnsallObjectsinthenamespace"
-            >getAll returns all Objects in the namespace</a
-          >
-        </li>
-        <li><a href="global.html#getAllStories">getAllStories</a></li>
-        <li><a href="global.html#getStory">getStory</a></li>
-        <li><a href="global.html#getTopStories">getTopStories</a></li>
-        <li><a href="global.html#ingestData">ingestData</a></li>
-        <li>
-          <a href="global.html#processChunkedResponse"
-            >processChunkedResponse</a
-          >
-        </li>
-      </ul>
-    </nav>
 
-    <br class="clear" />
 
-    <footer>
-      Documentation generated by
-      <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Oct 19
-      2023 21:15:55 GMT-0500 (Central Daylight Time)
-    </footer>
 
-    <script>
-      prettyPrint();
-    </script>
-    <script src="scripts/linenumber.js"></script>
-  </body>
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#checkDB">checkDB</a></li><li><a href="global.html#getComment">getComment</a></li><li><a href="global.html#getComments">getComments</a></li><li><a href="global.html#getStory">getStory</a></li><li><a href="global.html#getTopStories">getTopStories</a></li><li><a href="global.html#ingestData">ingestData</a></li><li><a href="global.html#processChunkedResponse">processChunkedResponse</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Oct 26 2023 15:46:58 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
 </html>

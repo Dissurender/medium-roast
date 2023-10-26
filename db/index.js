@@ -1,56 +1,69 @@
-import {PrismaClient} from '@prisma/client';
-
-export const prisma = new PrismaClient();
+import { PrismaClient } from '@prisma/client';
+import { logger } from '../utils/winston.js';
+const prisma = new PrismaClient();
 
 /**
- *
- * @returns {Story}
- * @param id
+ * Query story table for given ID
+ * @param {Number} id story id
+ * @returns {Promise<Story>}
  */
-export const selectStoryQuery = async (id) => {
-  const result = await prisma.story.findUnique({
-    where: { id: Number(id) },
-  });
-  console.log('selectStoryQ: ', id, result);
-  return result;
-};
+export async function selectStoryQuery(id) {
+  try {
+    const result = await prisma.story.findUnique({
+      where: { id: Number(id) },
+    });
+    return result;
+  } catch (error) {
+    logger.error(`Error selecting story: ${error}`);
+    throw new Error('Failed to select story');
+  }
+}
 
 /**
- *
+ * Query comment table for given ID
+ * @param {Number} id
  * @returns {Comment}
- * @param id
  */
-export const selectCommentQuery = async (id) => {
-  const result = await prisma.comment.findUnique({
-    where: { id: Number(id) },
-  });
-  console.log('selectCommentQ: ', id, result);
-  return result;
-};
+export async function selectCommentQuery(id) {
+  try {
+    const result = await prisma.comment.findUnique({
+      where: { id: Number(id) },
+    });
+    return result;
+  } catch (error) {
+    logger.error(`Error selecting story: ${error}`);
+    throw new Error('Failed to select story');
+  }
+}
 
 /**
- *
+ * Query the story table for 100 rows
  * @returns {Story[]}
  */
-export const selectAllQuery = async () => {
-  return prisma.story.findMany({
-    take: 100,
-    orderBy: {
-      time: 'desc',
-    },
-  });
-};
+export async function selectAllQuery() {
+  return prisma.story
+    .findMany({
+      take: 100,
+      orderBy: {
+        time: 'desc',
+      },
+    })
+    .catch((error) => {
+      logger.error(`Error selecting stories: ${error}`);
+      throw new Error('Failed to select all stories.');
+    });
+}
 
 /**
- *
+ * Queries the appropriate table for an item.
  * @param {Story} item
  * @returns {Story}
  */
-export const createQuery = async (item, type) => {
+export async function createQuery(item, type) {
   let result;
 
   if (type === 'story') {
-    console.log('creating story: ', item.id);
+    logger.info('creating story: ' + item.id);
     result = await prisma.story.create({
       data: {
         id: item.id,
@@ -66,7 +79,7 @@ export const createQuery = async (item, type) => {
       },
     });
   } else if (type === 'comment') {
-    console.log('creating comment: ', item.id);
+    logger.info('creating comment: ' + item.id);
     result = await prisma.comment.create({
       data: {
         id: item.id,
@@ -86,4 +99,4 @@ export const createQuery = async (item, type) => {
   }
 
   return result;
-};
+}

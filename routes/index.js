@@ -6,7 +6,6 @@ import {
 } from '../controllers/ingestController.js';
 import apiRouter from './api.js';
 
-
 router.get('/', function (req, res) {
   res.send('index');
 });
@@ -19,7 +18,7 @@ router.use('/api', apiRouter);
 
 // TODO: refactor into middleware
 router.use('/secretingest', (req, res) => {
-  console.log('/secretingest');
+  console.info('/secretingest');
   getTopStories();
   res.redirect('/api/top');
 });
