@@ -108,6 +108,7 @@ export async function fetchFromHN(id) {
  * @returns {Array<Object>}
  */
 export async function ingestData(data, type) {
+  // return if data is bad
   if (data === null) {
     logger.error('IngestData parameter `data` is null.');
     return;

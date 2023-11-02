@@ -24,7 +24,6 @@ Medium-roast is an API based on [HackerNews](https://news.ycombinator.com) creat
 
 ## Features
 
-DONE
 - Postgres DB to persist data from fetches to reduce network traffic.
 - Implement chunked http processing.
 - Focus on cyclic complexity to break apart large logic structures.
@@ -36,9 +35,17 @@ TODO
 
 ## Usage
 
-To run locally cd into the project root directory and use `npm run dev` in your terminal.
+You should provide a `.env`ironment with a connection string under the variable `DATABASE_URL`.
 
-You may also provide a `.env`ironment with a connection string.
+Initialize Prisma with `npx prisma init --datasource-provider postgresql` Migrate Models to Database with `npx prisma migrate dev --name init`
+
+To run locally use `npm run dev` in your terminal.
+Go to `http://localhost:8000/secretingest` to ingest the initial data.
+
+If you change the Models remember to run `npx prisma db push` to update your DB tables.
+If you have any issues with prisma, you can run `npx prisma db reset` to get fresh tables.
+
+If you have JSdoc installed globally, use `jsdoc controllers -r -d docs` to update the static html.
 
 ## How to Contribute
 

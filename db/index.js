@@ -1,11 +1,56 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../utils/winston.js';
-const prisma = new PrismaClient();
+
+export const prisma = new PrismaClient({
+  errorFormat: 'pretty',
+});
 
 /**
- * Query story table for given ID
- * @param {Number} id story id
- * @returns {Promise<Story>}
+ * Attempt to connect to a database using the Prisma ORM.
+ *
+ * @param {number} maxAttempts - The maximum number of connection attempts to make.
+ * @param {number} interval - The interval (in milliseconds) between each connection attempt.
+ * @throws {Error} If the maximum number of attempts is reached without a successful connection.
+ */
+export async function initPrisma(maxAttempts, interval) {
+  let attempt = 0;
+  while (attempt < maxAttempts) {
+    try {
+      await prisma.$connect();
+
+      logger.info('Connected to the database.');
+      return;
+    } catch (error) {
+      logger.error(`Error connecting to the database: ${error}`);
+      logger.error(
+        `Attempt ${attempt} of ${maxAttempts} to connect to the database..`
+      );
+
+      attempt++;
+      if (attempt < maxAttempts) {
+        logger.info(
+          `Sleeping ${interval / 1000} seconds before attempting again..`
+        );
+
+        await new Promise((resole) => setTimeout(resole, interval));
+      }
+    }
+  }
+  throw new Error(
+    `Failed to connect to the database after ${maxAttempts} attempts.`
+  );
+}
+
+prisma.$on('error', (err) => {
+  logger.error(err);
+});
+
+/**
+ * Retrieves a story from the database using the Prisma ORM.
+ *
+ * @param {Number} id - story ID to be retrieve.
+ * @returns {Object} - The story object retrieved from the database, or undefined if no story is found.
+ * @throws {Error} - If an error occurs during the database operation.
  */
 export async function selectStoryQuery(id) {
   try {
@@ -21,8 +66,11 @@ export async function selectStoryQuery(id) {
 
 /**
  * Query comment table for given ID
- * @param {Number} id
- * @returns {Comment}
+ *
+ * @param {number} id - comment ID to be retrieve.
+ * @returns {object} - The comment object retrieved from the database, or undefined if no comment is found.
+ * @throws {Error} - If an error occurs during the database operation.
+ *
  */
 export async function selectCommentQuery(id) {
   try {
@@ -37,8 +85,12 @@ export async function selectCommentQuery(id) {
 }
 
 /**
- * Query the story table for 100 rows
- * @returns {Story[]}
+ * Retrieves a list of stories from the database.
+ * If an error occurs during the retrieval process, log the error and throw an error.
+ *
+ * @returns {Promise<Array>} A promise that resolves to an array of stories retrieved from the database.
+ * @throws {Error} If an error occurs during the retrieval process.
+ *
  */
 export async function selectAllQuery() {
   return prisma.story
@@ -56,8 +108,10 @@ export async function selectAllQuery() {
 
 /**
  * Queries the appropriate table for an item.
- * @param {Story} item
- * @returns {Story}
+ *
+ * @param {number} id - item ID to be retrieve.
+ * @returns {object} - The comment object retrieved from the database, or undefined if no comment is found.
+ * @throws {Error} - If an error occurs during the database operation.
  */
 export async function createQuery(item, type) {
   let result;

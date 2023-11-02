@@ -11,21 +11,25 @@ router.get('/', function (req, res) {
 });
 
 router.get('/docs', (req, res) => {
-  res.redirect('http://localhost:52330/docs/index.html');
+  res.render('index');
 });
 
 router.use('/api', apiRouter);
 
-// TODO: refactor into middleware
-router.use('/secretingest', (req, res) => {
+// TODO: refactor into middleware with cron
+router.get('/secretingest', (req, res) => {
   console.info('/secretingest');
   getTopStories();
   res.redirect('/api/top');
 });
 
-router.use('/secretingestfull', () => {
+router.get('/secretingestfull', (req, res) => {
   getMostRecentStory();
-  // res.redirect('/api/top')
+  res.redirect('/api/top');
+});
+
+router.get('/:error', (req, res, next) => {
+  next(new Error('Test error handler..'));
 });
 
 export default router;
