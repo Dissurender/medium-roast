@@ -1,11 +1,5 @@
-/**
- *
- *
- * @export
- * @param {Request} req
- * @param {Response} res
- * @param {Next} next
- */
+import { logger } from '../utils/winston';
+
 export function requestLogger(req, res, next) {
   const time = new Date(Date.now());
   const [month, day, year, hour, minute] = [
@@ -18,7 +12,7 @@ export function requestLogger(req, res, next) {
 
   const requestTime = `${month}-${day}-${year} (${hour}:${minute})`;
 
-  console.log(`Request data: ${req.method} -- ${req.url} ${requestTime}`);
+  logger.info(`Request data: ${req.method} -- ${req.url} ${requestTime}`);
 
   next();
 }

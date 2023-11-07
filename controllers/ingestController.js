@@ -108,13 +108,13 @@ export async function fetchFromHN(id) {
  * @returns {Array<Object>}
  */
 export async function ingestData(data, type) {
-  // return if data is bad
+  // return if data is bad and log the error
   if (data === null) {
     logger.error('IngestData parameter `data` is null.');
     return;
   }
 
-  let queue = [...data];
+  const queue = [...data];
   let result = [];
 
   for (let i = 0; i < queue.length; i++) {
@@ -142,17 +142,16 @@ export async function ingestData(data, type) {
  * @param type
  */
 export async function getComments(item, type) {
+  // validate input item for escape clause
   if (!item.kids || typeof item !== 'object') {
     logger.warn(`${item} is not valid.`);
     return item;
   }
   logger.info('Getting comments for ' + item.id);
 
-  if (!item.kids) return item;
   const kids = await ingestData(item.kids, type);
 
   let newKids = [];
-
   for (let i = 0; i < kids.length; i++) {
     const temp = await getComments(kids[i], 'comment');
     newKids.push(temp);
