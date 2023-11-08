@@ -28,8 +28,8 @@ router.get('/secretingestfull', (req, res) => {
   res.redirect('/api/top');
 });
 
-router.get('/:error', (req, res, next) => {
-  next(new Error('Test error handler..'));
-});
+// router.get('/:error', (req, res, next) => {
+//   next(new Error('Test error handler..'));
+// });
 
 export default router;

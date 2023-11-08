@@ -8,6 +8,7 @@ import { logger } from '../utils/winston.js';
  */
 export const getTopStories = async (req, res) => {
   const results = await selectAllQuery();
+
   res.json(results);
 };
 
