@@ -1,7 +1,8 @@
 import { logger } from './winston.js';
 
 export function logErr(err) {
-  logger.error(err);
+  logger.error(err.message);
+  logger.error(err.stack);
 }
 
 export function errMiddleware(err, req, res, next) {

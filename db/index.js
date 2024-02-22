@@ -154,3 +154,23 @@ export async function createQuery(item, type) {
 
   return result;
 }
+
+/**
+ * Query database for given ID and return if found or null.
+ * @param {Number} id
+ * @param {String} type
+ * @return {Promise<Object>} Story or Comment Object
+ */
+export async function checkDB(id, type) {
+  logger.info('lookup: ' + `${id} ${type}`);
+
+  if (type === 'story') {
+    const story = await selectStoryQuery(id);
+    logger.info('story check: ' + id);
+    return story;
+  } else if (type === 'comment') {
+    const comment = await selectCommentQuery(id);
+    logger.info('comment check: ' + id);
+    return comment;
+  }
+}

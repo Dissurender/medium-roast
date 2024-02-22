@@ -1,31 +1,18 @@
-/**
- * TODO:
- */
 class Cache {
-  defaultCache;
   constructor() {
-    this.defaultCache = new Map();
+    this.cache = new Map();
   }
 
   getSize() {
-    return this.defaultCache.size;
+    return this.cache.size;
   }
 
-  peekName() {
-    return this.defaultCache;
-  }
-
-  /**
-   * @method
-   * @param {Number} key -- Story ID
-   * @returns {Object} -- Schema found in src/models
-   */
   get(key) {
-    return this.defaultCache.get(key);
+    return this.cache.get(key);
   }
 
-  getAll() {
-    return this.defaultCache.values;
+  getKeys() {
+    return this.cache.keys();
   }
 
   /**
@@ -36,7 +23,7 @@ class Cache {
    * @param {Object} value
    */
   put(key, value) {
-    this.defaultCache.set(key, value);
+    this.cache.set(key, value);
   }
 
   /**
@@ -45,15 +32,15 @@ class Cache {
    * @param {Nunmber} key -- Story ID
    */
   remove(key) {
-    this.defaultCache.delete(key);
+    this.cache.delete(key);
   }
 
   /**
-   * @method
    * retire flushes the  in the this.defaultCache
+   * @method
    */
   retire() {
-    this.defaultCache.clear();
+    this.cache.clear();
   }
 }
 

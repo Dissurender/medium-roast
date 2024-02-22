@@ -1,5 +1,5 @@
-import { selectAllQuery } from '../db/index.js';
-import { checkDB, getComments } from './ingestController.js';
+import { checkDB, selectAllQuery } from '../db/index.js';
+import { getComments } from './ingestController.js';
 import { logger } from '../utils/winston.js';
 /**
  * Retrieves top stories from HN API
@@ -13,9 +13,11 @@ export const getTopStories = async (req, res) => {
 };
 
 /**
- *
- * @param {Request} req
- * @param {Response} res
+  * getStory retrieves a story from the database or the HN API
+  * @param {Request} req
+  * @param {Response} res
+  * @returns {Object} Story Object
+  * @async
  */
 export const getStory = async (req, res) => {
   try {
@@ -32,9 +34,11 @@ export const getStory = async (req, res) => {
 };
 
 /**
- *
- * @param {Request} req
- * @param {Response} res
+  * getComment retrieves a comment from the database or the HN API
+  * @param {Request} req
+  * @param {Response} res
+  * @returns {Object} Comment Object
+  * @async
  */
 export const getComment = async (req, res) => {
   try {

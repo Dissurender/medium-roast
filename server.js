@@ -2,7 +2,7 @@ import express from 'express';
 const app = express();
 import routes from './routes/index.js';
 import morgan from 'morgan';
-import { job } from './utils/cron.js';
+import startCron from './utils/cron.js';
 import { errMiddleware } from './utils/errorHandler.js';
 import { logger } from './utils/winston.js';
 import { initPrisma } from './db/index.js';
@@ -14,17 +14,17 @@ const port = process.env.PORT || 8000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs') // TODO: ejs config
+app.set('view engine', 'ejs'); // TODO: ejs config
 app.use(express.static(__dirname + '/docs'));
 app.use(morgan('dev'));
 
 initPrisma(3, 1000)
   .then(() => {
-    app.use(routes);
-
+    
     app.use(errMiddleware);
-
-    // job.start()
+    app.use(startCron);
+    
+    app.use(routes);
 
     app.listen(port, () => {
       console.log(`Server is running on port: http://localhost:${port}/`);
@@ -32,5 +32,6 @@ initPrisma(3, 1000)
   })
   .catch((error) => {
     logger.error('Prisma initialization failed:', error);
-    // restart process
+    // restart process?
+    process.exit(1);
   });

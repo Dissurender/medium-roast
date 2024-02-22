@@ -1,12 +1,14 @@
 const base = 'https://hacker-news.firebaseio.com/';
-import {
-  createQuery,
-  selectCommentQuery,
-  selectStoryQuery,
-} from '../db/index.js';
+import { createQuery, checkDB } from '../db/index.js';
 import { logger } from '../utils/winston.js';
-
-// TODO: function to crawl the IDs periodically
+import WorkQueue from '../utils/workQueue.js';
+/**
+ * Retrieves the most recent story from the Hacker News API and traverses the IDs
+ * 100 most revcent stories. It then passes the retrieved stories to the {@link ingestData}
+ * @async
+ * @returns {Promise<Story>} - Story object
+ *
+ */
 export async function getMostRecentStory() {
   const story = await fetch(base + `v0/maxitem.json`).then(
     processChunkedResponse
@@ -14,7 +16,11 @@ export async function getMostRecentStory() {
 
   logger.info('the story: ' + story.id);
 
-  // consumeData(story);
+  // create an array of the 100 most recent stories from the most recent story id
+  const ids = Array.from({ length: 100 }, (_, i) => story - i);
+  const result = await ingestData(ids, 'story');
+
+  logger.info(`${result.length} items ingested`);
 }
 
 /**
@@ -76,25 +82,10 @@ function processChunkedResponse(response) {
 }
 
 /**
- * Query database for given ID and return if found or null.
- * @param {Number} id
- * @param {String} type
- * @return {Promise<Object>} Story or Comment Object
+ * Fetches a story from the Hacker News API
+ * @param {Number} id - ID of the story
+ * @returns {Promise<Story>} - Story object
  */
-export async function checkDB(id, type) {
-  logger.info('lookup: ' + `${id} ${type}`);
-
-  if (type === 'story') {
-    const story = await selectStoryQuery(id);
-    logger.info('story check: ' + id);
-    return story;
-  } else if (type === 'comment') {
-    const comment = await selectCommentQuery(id);
-    logger.info('comment check: ' + id);
-    return comment;
-  }
-}
-
 export async function fetchFromHN(id) {
   return await fetch(base + `v0/item/${id}.json`).then(processChunkedResponse);
 }
@@ -114,16 +105,20 @@ export async function ingestData(data, type) {
     return;
   }
 
-  const queue = [...data];
+  // instantiate a new work queue
+  const work = new WorkQueue();
+  work.enqueue(data);
+
   let result = [];
 
-  for (let i = 0; i < queue.length; i++) {
-    let selectItem = await checkDB(queue[i], type);
+  while (!work.done()) {
+    const item = work.dequeue();
+    let selectItem = await checkDB(item.item, type);
 
     if (selectItem === null) {
       logger.info(`${type} not found.`);
 
-      selectItem = await fetchFromHN(queue[i]);
+      selectItem = await fetchFromHN(item.item);
       createQuery(selectItem, type);
     } else {
       logger.info('story found.');
@@ -136,8 +131,8 @@ export async function ingestData(data, type) {
 }
 
 /**
- * Get story is a helper function for {@link ingestData}
- * to recurse the kids field and build out comment trees
+ * getComments is a helper function for {@link ingestData}
+ * to recurse the kids(Comments) field and build out comment trees
  * @param {Story} item
  * @param type
  */
