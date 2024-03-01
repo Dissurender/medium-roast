@@ -14,18 +14,18 @@ router.get('/docs', (req, res) => {
   res.render('index');
 });
 
-router.use('/api', apiRouter);
+router.use('/api/v0', apiRouter);
 
 // TODO: refactor into middleware with cron job
 router.get('/secretingest', (req, res) => {
   console.info('/secretingest');
   getTopStories();
-  res.redirect('/api/top');
+  res.redirect('/api/v0/top');
 });
 
 router.get('/secretingestfull', (req, res) => {
   getMostRecentStory();
-  res.redirect('/api/top');
+  res.redirect('/api/v0/top');
 });
 
 // handle 404

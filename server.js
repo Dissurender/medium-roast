@@ -2,7 +2,7 @@ import express from 'express';
 const app = express();
 import routes from './routes/index.js';
 import morgan from 'morgan';
-import startCron from './utils/cron.js';
+import {startCron} from './utils/cron.js';
 import { errMiddleware } from './utils/errorHandler.js';
 import { logger } from './utils/winston.js';
 import { initPrisma } from './db/index.js';
@@ -22,7 +22,14 @@ initPrisma(3, 1000)
   .then(() => {
     
     app.use(errMiddleware);
-    app.use(startCron);
+    // use CORS middleware
+    app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      next();
+    });
+
+    // app.use(startCron);
     
     app.use(routes);
 
