@@ -88,22 +88,26 @@ export async function selectCommentQuery(id) {
  * Retrieves a list of stories from the database.
  * If an error occurs during the retrieval process, log the error and throw an error.
  *
+ * @param {number} page - The page number of the results to retrieve.
+ * @param {number} pageSize - The number of results per page.
  * @returns {Promise<Array>} A promise that resolves to an array of stories retrieved from the database.
  * @throws {Error} If an error occurs during the retrieval process.
- *
  */
-export async function selectAllQuery() {
-  return prisma.story
-    .findMany({
-      take: 100,
+export async function selectAllQuery(page, pageSize) {
+  try {
+    const skip = (page - 1) * pageSize;
+    const result = await prisma.story.findMany({
+      take: pageSize,
       orderBy: {
         time: 'desc',
       },
-    })
-    .catch((error) => {
-      logger.error(`Error selecting stories: ${error}`);
-      throw new Error('Failed to select all stories.');
+      skip: skip || 0,
     });
+    return result;
+  } catch (error) {
+    logger.error(`Error selecting stories: ${error}`);
+    throw new Error('Failed to select all stories.');
+  }
 }
 
 /**

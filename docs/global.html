@@ -98,10 +98,14 @@
 
         
             
-<h4 class="name" id="getComment"><span class="type-signature">(constant) </span>getComment<span class="type-signature"></span></h4>
+<h4 class="name" id="getComment"><span class="type-signature">(async, constant) </span>getComment<span class="type-signature"></span></h4>
 
 
 
+
+<div class="description">
+    getComment retrieves a comment from the database or the HN API
+</div>
 
 
 
@@ -138,7 +142,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="storiesController.js.html">storiesController.js</a>, <a href="storiesController.js.html#line38">line 38</a>
+        <a href="storiesController.js.html">storiesController.js</a>, <a href="storiesController.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
@@ -156,10 +160,14 @@
 
         
             
-<h4 class="name" id="getStory"><span class="type-signature">(constant) </span>getStory<span class="type-signature"></span></h4>
+<h4 class="name" id="getStories"><span class="type-signature">(async, constant) </span>getStories<span class="type-signature"></span></h4>
 
 
 
+
+<div class="description">
+    getStories retrieves a paginated list of stories from the database
+</div>
 
 
 
@@ -196,7 +204,69 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="storiesController.js.html">storiesController.js</a>, <a href="storiesController.js.html#line19">line 19</a>
+        <a href="storiesController.js.html">storiesController.js</a>, <a href="storiesController.js.html#line64">line 64</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="getStory"><span class="type-signature">(async, constant) </span>getStory<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    getStory retrieves a story from the database or the HN API
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="storiesController.js.html">storiesController.js</a>, <a href="storiesController.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -286,7 +356,7 @@
     
 
     
-    <h4 class="name" id="checkDB"><span class="type-signature"></span>checkDB<span class="signature">(id, type)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    <h4 class="name" id="fetchFromHN"><span class="type-signature"></span>fetchFromHN<span class="signature">(id)</span><span class="type-signature"> &rarr; {Promise.&lt;Story>}</span></h4>
     
 
     
@@ -294,7 +364,7 @@
 
 
 <div class="description">
-    Query database for given ID and return if found or null.
+    Fetches a story from the Hacker News API
 </div>
 
 
@@ -346,30 +416,7 @@
 
             
 
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
+            <td class="description last">ID of the story</td>
         </tr>
 
     
@@ -410,7 +457,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line84">line 84</a>
+        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line89">line 89</a>
     </li></ul></dd>
     
 
@@ -439,7 +486,7 @@
 
         
 <div class="param-desc">
-    Story or Comment Object
+    - Story object
 </div>
 
 
@@ -450,7 +497,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;Object></span>
+<span class="param-type">Promise.&lt;Story></span>
 
 
     </dd>
@@ -476,8 +523,8 @@
 
 
 <div class="description">
-    Get story is a helper function for <a href="global.html#ingestData">ingestData</a>
-to recurse the kids field and build out comment trees
+    getComments is a helper function for <a href="global.html#ingestData">ingestData</a>
+to recurse the kids(Comments) field and build out comment trees
 </div>
 
 
@@ -588,7 +635,7 @@ to recurse the kids field and build out comment trees
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line144">line 144</a>
+        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line139">line 139</a>
     </li></ul></dd>
     
 
@@ -613,6 +660,117 @@ to recurse the kids field and build out comment trees
 
 
 
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getMostRecentStory"><span class="type-signature">(async) </span>getMostRecentStory<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Story>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Retrieves the most recent story from the Hacker News API and traverses the IDs
+100 most revcent stories. It then passes the retrieved stories to the <a href="global.html#ingestData">ingestData</a>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - Story object
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Story></span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -678,7 +836,7 @@ function to process and store them in a database.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line26">line 26</a>
+        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line32">line 32</a>
     </li></ul></dd>
     
 
@@ -840,7 +998,7 @@ it to mutate and store into the result array
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line110">line 110</a>
+        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line101">line 101</a>
     </li></ul></dd>
     
 
@@ -996,7 +1154,7 @@ into a String using 9th Level Magic then parses to Json.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line44">line 44</a>
+        <a href="ingestController.js.html">ingestController.js</a>, <a href="ingestController.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -1052,13 +1210,13 @@ into a String using 9th Level Magic then parses to Json.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#checkDB">checkDB</a></li><li><a href="global.html#getComment">getComment</a></li><li><a href="global.html#getComments">getComments</a></li><li><a href="global.html#getStory">getStory</a></li><li><a href="global.html#getTopStories">getTopStories</a></li><li><a href="global.html#ingestData">ingestData</a></li><li><a href="global.html#processChunkedResponse">processChunkedResponse</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#fetchFromHN">fetchFromHN</a></li><li><a href="global.html#getComment">getComment</a></li><li><a href="global.html#getComments">getComments</a></li><li><a href="global.html#getMostRecentStory">getMostRecentStory</a></li><li><a href="global.html#getStories">getStories</a></li><li><a href="global.html#getStory">getStory</a></li><li><a href="global.html#getTopStories">getTopStories</a></li><li><a href="global.html#ingestData">ingestData</a></li><li><a href="global.html#processChunkedResponse">processChunkedResponse</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Nov 01 2023 11:00:26 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat Mar 02 2024 20:12:42 GMT-0600 (Central Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
