@@ -13,11 +13,11 @@ export const getTopStories = async (req, res) => {
 };
 
 /**
-  * getStory retrieves a story from the database or the HN API
-  * @param {Request} req
-  * @param {Response} res
-  * @returns {Object} Story Object
-  * @async
+ * getStory retrieves a story from the database or the HN API
+ * @param {Request} req
+ * @param {Response} res
+ * @returns {Object} Story Object
+ * @async
  */
 export const getStory = async (req, res) => {
   try {
@@ -34,11 +34,11 @@ export const getStory = async (req, res) => {
 };
 
 /**
-  * getComment retrieves a comment from the database or the HN API
-  * @param {Request} req
-  * @param {Response} res
-  * @returns {Object} Comment Object
-  * @async
+ * getComment retrieves a comment from the database or the HN API
+ * @param {Request} req
+ * @param {Response} res
+ * @returns {Object} Comment Object
+ * @async
  */
 export const getComment = async (req, res) => {
   try {
@@ -48,6 +48,27 @@ export const getComment = async (req, res) => {
     comment = await getComments(comment, 'comment');
 
     res.json(comment);
+  } catch (error) {
+    logger.error('Error occurred: ' + error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * getStories retrieves a paginated list of stories from the database
+ * @param {Request} req
+ * @param {Response} res
+ * @returns {Object} Array of Story Objects
+ * @async
+ */
+export const getStories = async (req, res) => {
+  try {
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+
+    const results = await selectAllQuery(page, limit);
+
+    res.json(results);
   } catch (error) {
     logger.error('Error occurred: ' + error.message);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -2,6 +2,7 @@ const base = 'https://hacker-news.firebaseio.com/';
 import { createQuery, checkDB } from '../db/index.js';
 import { logger } from '../utils/winston.js';
 import WorkQueue from '../utils/workQueue.js';
+
 /**
  * Retrieves the most recent story from the Hacker News API and traverses the IDs
  * 100 most revcent stories. It then passes the retrieved stories to the {@link ingestData}
