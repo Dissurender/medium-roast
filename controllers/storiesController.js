@@ -1,6 +1,7 @@
 import { checkDB, selectAllQuery } from '../db/index.js';
 import { getComments } from './ingestController.js';
 import { logger } from '../utils/winston.js';
+
 /**
  * Retrieves top stories from HN API
  * @async

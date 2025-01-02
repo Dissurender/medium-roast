@@ -6,7 +6,7 @@
 
 ## Description
 
-Medium-roast is an API based on [HackerNews](https://news.ycombinator.com) created by [ycombinator](https://www.ycombinator.com).
+Medium-roast is an Proxy API to ingest and clean data from [HackerNews](https://news.ycombinator.com) created by [ycombinator](https://www.ycombinator.com).
 
 - I built this project to provide a more accessible API for HN; a sister project of [hn-go](https://github.com/Dissurender/hn-go), which runs on a local cache structure.
 - Medium-roast ingests and creates a local database of http response data from HN's firebase API.
@@ -20,7 +20,6 @@ Medium-roast is an API based on [HackerNews](https://news.ycombinator.com) creat
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Usage](#usage)
-  - [How to Contribute](#how-to-contribute)
 
 ## Features
 
@@ -47,7 +46,3 @@ If you have any issues with prisma, you can run `npx prisma db reset` to get fre
 
 If you have JSdoc installed globally, use `jsdoc controllers -r -d docs` to update the static html.
 
-## How to Contribute
-
-Please veiw the issues tab or open a discussion for non-listed issues.
-Adhere to the [Contributor Covenant](https://www.contributor-covenant.org/)
