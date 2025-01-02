@@ -1,0 +1,25 @@
+version: '3'
+name: medium-roast
+
+services:
+# Postgres ========================================
+  postgres:
+    container_name: postgres-medium-roast
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_SECRET}
+      POSTGRES_DB: medium_roast
+    ports:
+      - '5432:5432'
+    networks:
+      - medium-roast-local
+    volumes:
+      - postgres_data_medium_roast:/data/db
+
+networks:
+  medium-roast-local:
+    driver: bridge
+
+volumes:
+  postgres_data_medium_roast:

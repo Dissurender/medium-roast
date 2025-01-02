@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "prettier --check . && eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
   },
   "repository": {
     "type": "git",
