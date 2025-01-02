@@ -34,9 +34,9 @@ TODO
 
 ## Usage
 
-You should provide a `.env`ironment with a connection string under the variable `DATABASE_URL`.
+Using `.env.sample`, create a `.env` and provide the needed fields .
 
-Initialize Prisma with `npx prisma init --datasource-provider postgresql` Migrate Models to Database with `npx prisma migrate dev --name init`
+<!-- Initialize Prisma with `npx prisma init --datasource-provider postgresql` Migrate Models to Database with `npx prisma migrate dev --name init` -->
 
 To run locally use `npm run dev` in your terminal.
 Go to `http://localhost:8000/secretingest` to ingest the initial data.

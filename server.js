@@ -40,6 +40,10 @@ initPrisma(3, 1000)
   })
   .catch((error) => {
     logger.error('Prisma initialization failed:', error);
+    logger.info(`
+      
+      Please refer to the README to initialize Prisma
+      `)
     // restart process?
     process.exit(1);
   });
