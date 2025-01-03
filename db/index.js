@@ -90,8 +90,8 @@ export async function selectCommentQuery(id) {
  *
  * @param {number} page - The page number of the results to retrieve.
  * @param {number} pageSize - The number of results per page.
- * @returns {Promise<Array>} A promise that resolves to an array of stories retrieved from the database.
- * @throws {Error} If an error occurs during the retrieval process.
+ * @returns {Promise<Array>} An array of stories retrieved from the database.
+ * @throws {Error}
  */
 export async function selectAllQuery(page, pageSize) {
   try {
@@ -107,6 +107,28 @@ export async function selectAllQuery(page, pageSize) {
   } catch (error) {
     logger.error(`Error selecting stories: ${error}`);
     throw new Error('Failed to select all stories.');
+  }
+}
+
+/**
+ * Retrieves a list of recent stories from the database.
+ * 
+ * @param {number} limit - The number of results to retrieve.
+ * @returns {Promise<Array>} An array of stories retrieved from the database.
+ * @throws {Error}
+ */
+export async function selectRecentQuery(limit) {
+  try {
+    const result = await prisma.story.findMany({
+      take: limit,
+      orderBy: {
+        time: 'desc',
+      },
+    });
+    return result;
+  } catch (error) {
+    logger.error(`Error selecting recent stories: ${error}`);
+    throw new Error('Failed to select recent stories.');
   }
 }
 

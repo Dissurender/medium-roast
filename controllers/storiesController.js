@@ -14,6 +14,17 @@ export const getTopStories = async (req, res) => {
 };
 
 /**
+ * Retrieves the most recent stories from the Database
+ * @async
+ * @returns {*} Object
+ */
+export const getRecentStories = async (req, res) => {
+  const results = await selectAllQuery();
+
+  res.json(results);
+};
+
+/**
  * getStory retrieves a story from the database or the HN API
  * @param {Request} req
  * @param {Response} res
