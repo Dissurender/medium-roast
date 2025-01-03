@@ -10,7 +10,8 @@
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write .",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "jsdoc": "jsdoc controllers -r -d docs"
   },
   "repository": {
     "type": "git",
