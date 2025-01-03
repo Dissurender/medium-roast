@@ -2,6 +2,8 @@ const base = 'https://hacker-news.firebaseio.com/';
 import { createQuery, checkDB } from '../db/index.js';
 import { logger } from '../utils/winston.js';
 import WorkQueue from '../utils/workQueue.js';
+// instantiate a new work queue
+const work = new WorkQueue();
 
 /**
  * Retrieves the most recent story from the Hacker News API and traverses the IDs
@@ -106,8 +108,6 @@ export async function ingestData(data, type) {
     return;
   }
 
-  // instantiate a new work queue
-  const work = new WorkQueue();
   work.enqueue(data);
 
   let result = [];
