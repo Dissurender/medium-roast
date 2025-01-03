@@ -1,4 +1,4 @@
-import { checkDB, selectAllQuery } from '../db/index.js';
+import { checkDB, selectAllQuery, selectRecentQuery } from '../db/index.js';
 import { getComments } from './ingestController.js';
 import { logger } from '../utils/winston.js';
 
@@ -19,7 +19,7 @@ export const getTopStories = async (req, res) => {
  * @returns {*} Object
  */
 export const getRecentStories = async (req, res) => {
-  const results = await selectAllQuery();
+  const results = await selectRecentQuery(10);
 
   res.json(results);
 };
