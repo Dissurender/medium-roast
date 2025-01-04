@@ -38,6 +38,7 @@ Requirements:
 * Docker
 
 Using `.env.sample`, create a `.env` and provide the needed fields.
+Run `npm run docker:up` to create a new Postgres container using the values in your `.env` file.
 
 <!-- Initialize Prisma with `npx prisma init --datasource-provider postgresql` Migrate Models to Database with `npx prisma migrate dev --name init` -->
 
