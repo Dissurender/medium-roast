@@ -11,12 +11,12 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerui from 'swagger-ui-express';
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-// import { requestLogger } from './middleware/logger.js';
+import { requestLogger } from './middleware/logger.js';
 const port = process.env.PORT || 8000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs'); // TODO: ejs config
+app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/docs'));
 app.use(morgan('dev'));
 
@@ -47,7 +47,9 @@ const options = {
   apis: ['./routes/*.js'],
 };
 
+// initPrisma allows the server to retry N times before throwing and exiting
 // Initialize a http server if database successfully connects
+// TODO: Add exponiential backoff for retries
 initPrisma(3, 1000)
   .then(() => {
     app.use(errMiddleware);
